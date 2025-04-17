@@ -195,14 +195,16 @@ export class MemStorage implements IStorage {
   private initSampleData() {
     // Create a test user if none exists yet
     if (this.users.size === 0) {
+      // Using our custom hashing function, the password is "password123"
       const testUser: User = {
         id: 1,
         username: "demo",
-        password: "$2a$10$JrJsqA9I1DgfX1R5mZMl8O99jB/lWW8ZXOToM3OCsGz.QI2zqv2ky", // password: "password123"
+        password: "f447b20a7fcbf53a5d5be013ea0b15af1a87f882c131a40937a95bcda9b8b564e024d43fd429f49b1c5c29e1c181e4b35db19c5c8cdbd0c1828d4fdbf958e110.d7b19f4e4a37c9af24ad040e5673f053",
         name: "Demo User",
         email: "demo@example.com",
         company: "BoothBound Inc.",
-        role: "Sales Manager"
+        role: "Sales Manager",
+        avatar: null
       };
       this.users.set(testUser.id, testUser);
       this.userIdCounter = 2;
