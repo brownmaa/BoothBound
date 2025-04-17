@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertEventSchema, insertLeadSchema, insertEventAttendeeSchema } from "@shared/schema";
+import { insertEventSchema, insertLeadSchema, insertEventAttendeeSchema, type Lead } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import * as Papa from "papaparse";

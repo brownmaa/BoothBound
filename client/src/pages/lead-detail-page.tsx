@@ -260,6 +260,19 @@ export default function LeadDetailPage() {
                     </div>
                   </div>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => enrichMutation.mutate()}
+                  disabled={isEnriching}
+                >
+                  {isEnriching ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <UserPlus className="mr-2 h-4 w-4" />
+                  )}
+                  {isEnriching ? "Enriching..." : "Enrich Data"}
+                </Button>
               </div>
 
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -345,10 +358,10 @@ export default function LeadDetailPage() {
                         
                         // Refresh the lead data
                         queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
-                      } catch (err) {
+                      } catch (err: any) {
                         toast({
                           title: "Error scoring lead",
-                          description: err.message,
+                          description: err.message || "An unknown error occurred",
                           variant: "destructive",
                         });
                       }
