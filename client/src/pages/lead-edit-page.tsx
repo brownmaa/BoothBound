@@ -36,7 +36,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { z } from "zod";
-import { Lead } from "@shared/schema";
+import { Lead, EventAttendee } from "@shared/schema";
 
 const leadFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -47,6 +47,8 @@ const leadFormSchema = z.object({
   company: z.string().optional(),
   notes: z.string().optional(),
   score: z.enum(["low", "medium", "high"]).default("medium"),
+  employeeId: z.number().optional().nullable(),
+  employeeName: z.string().optional().nullable(),
 });
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
@@ -60,6 +62,12 @@ export default function LeadEditPage() {
   const { data: lead, isLoading: leadLoading } = useQuery<Lead>({
     queryKey: ["/api/leads", leadId],
     enabled: !!leadId,
+  });
+  
+  // Fetch event attendees for dropdown
+  const { data: attendees, isLoading: attendeesLoading } = useQuery<EventAttendee[]>({
+    queryKey: ["/api/events", lead?.eventId, "attendees"],
+    enabled: !!lead?.eventId,
   });
   
   const form = useForm<LeadFormValues>({
@@ -88,6 +96,8 @@ export default function LeadEditPage() {
         company: lead.company || undefined,
         notes: lead.notes || undefined,
         score: lead.score as "low" | "medium" | "high",
+        employeeId: lead.employeeId || null,
+        employeeName: lead.employeeName || null,
       });
     }
   }, [lead, form]);
@@ -272,35 +282,81 @@ export default function LeadEditPage() {
                     />
                   </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="score"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Lead Quality</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select lead quality" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="low">Low</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          Rate the lead's quality based on your assessment
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="score"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lead Quality</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select lead quality" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="high">High</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="low">Low</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Rate the lead's quality based on your assessment
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="employeeId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Assigned Team Member</FormLabel>
+                          <Select 
+                            onValueChange={(value) => {
+                              // Find the selected attendee
+                              const selectedAttendee = attendees?.find(a => a.id === parseInt(value));
+                              if (selectedAttendee) {
+                                // Update both employeeId and employeeName
+                                field.onChange(selectedAttendee.id);
+                                form.setValue("employeeName", selectedAttendee.name);
+                              } else {
+                                // Clear both fields if "None" is selected
+                                field.onChange(null);
+                                form.setValue("employeeName", null);
+                              }
+                            }}
+                            value={field.value?.toString() || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select team member" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">None</SelectItem>
+                              {attendees?.map(attendee => (
+                                <SelectItem key={attendee.id} value={attendee.id.toString()}>
+                                  {attendee.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Assign a team member who is responsible for this lead
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
                   <FormField
                     control={form.control}

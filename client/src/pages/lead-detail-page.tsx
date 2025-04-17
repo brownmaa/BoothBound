@@ -255,7 +255,7 @@ export default function LeadDetailPage() {
                     <div className="flex items-center">
                       <User className="h-5 w-5 text-gray-400 mr-2" />
                       <span className="text-sm text-gray-900">
-                        Collected by: {lead.employeeName}
+                        Assigned to: {lead.employeeName}
                       </span>
                     </div>
                   )}
