@@ -347,7 +347,7 @@ export default function EventDetailPage() {
                                     <Avatar>
                                       <AvatarImage src={lead.avatar || undefined} />
                                       <AvatarFallback>
-                                        {`${lead.firstName ? lead.firstName.charAt(0) : ''}${lead.lastName ? lead.lastName.charAt(0) : ''}`}
+                                        {`${lead?.firstName?.charAt(0) || ''}${lead?.lastName?.charAt(0) || ''}`}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="ml-3">
