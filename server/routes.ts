@@ -12,6 +12,9 @@ import { scoreLead } from "./openai";
 // Set up file upload middleware
 const upload = multer({ dest: "uploads/" });
 
+// Import OpenAI service if needed for transcription
+import OpenAI from "openai";
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
