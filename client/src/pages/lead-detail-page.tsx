@@ -35,6 +35,9 @@ import {
   FileText,
   Link as LinkIcon,
   Award,
+  RefreshCw,
+  Loader2,
+  UserPlus,
 } from "lucide-react";
 import { Lead } from "@shared/schema";
 
@@ -56,6 +59,7 @@ export default function LeadDetailPage() {
   const { toast } = useToast();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isEnriching, setIsEnriching] = useState(false);
   
   const leadId = parseInt(id || "0");
   
@@ -88,6 +92,38 @@ export default function LeadDetailPage() {
       toast({
         title: "Error",
         description: "Failed to delete the lead. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Enrich lead mutation
+  const enrichMutation = useMutation({
+    mutationFn: async () => {
+      setIsEnriching(true);
+      const res = await apiRequest("POST", `/api/leads/${leadId}/enrich`);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setIsEnriching(false);
+      if (data.success) {
+        toast({
+          title: "Lead enriched",
+          description: `Updated ${data.enriched?.length || 0} fields with social data.`,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
+      } else {
+        toast({
+          title: "No enrichment data found",
+          description: data.message || "Could not find additional data for this lead.",
+        });
+      }
+    },
+    onError: (error: Error) => {
+      setIsEnriching(false);
+      toast({
+        title: "Error",
+        description: "Failed to enrich the lead. Please try again.",
         variant: "destructive",
       });
     },

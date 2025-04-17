@@ -475,6 +475,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Social Media Enrichment endpoint
+  app.post("/api/leads/:id/enrich", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const leadId = parseInt(req.params.id);
+    
+    if (isNaN(leadId)) {
+      return res.status(400).json({ error: "Invalid lead ID" });
+    }
+    
+    try {
+      const existingLead = await storage.getLead(leadId);
+      if (!existingLead) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+      
+      // Check if the lead belongs to the user
+      if (existingLead.userId !== userId) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+      
+      // Import services here to avoid circular dependencies
+      const { enrichLeadWithClearbit } = await import("../client/src/services/clearbit");
+      const { enrichLeadWithPhantomBuster } = await import("../client/src/services/phantombuster");
+      
+      // Try Clearbit first for enrichment
+      let enrichmentData = await enrichLeadWithClearbit(existingLead.email);
+      
+      // Fall back to PhantomBuster if needed or to complement data
+      if (!enrichmentData || !enrichmentData.avatar) {
+        const phantomData = await enrichLeadWithPhantomBuster(existingLead.email);
+        if (phantomData) {
+          enrichmentData = { ...enrichmentData || {}, ...phantomData };
+        }
+      }
+      
+      // If we got enrichment data, update the lead
+      if (enrichmentData) {
+        const updateData: Partial<Lead> = {};
+        
+        if (enrichmentData.firstName) updateData.firstName = enrichmentData.firstName;
+        if (enrichmentData.lastName) updateData.lastName = enrichmentData.lastName;
+        if (enrichmentData.title) updateData.title = enrichmentData.title;
+        if (enrichmentData.company) updateData.company = enrichmentData.company;
+        if (enrichmentData.avatar) updateData.avatar = enrichmentData.avatar;
+        
+        const updatedLead = await storage.updateLead(leadId, updateData);
+        
+        res.json({
+          success: true,
+          lead: updatedLead,
+          enriched: Object.keys(updateData)
+        });
+      } else {
+        res.json({
+          success: false,
+          message: "Could not find additional data for this lead"
+        });
+      }
+    } catch (error) {
+      console.error("Error enriching lead:", error);
+      res.status(500).json({ error: "Failed to enrich lead with social data" });
+    }
+  });
+  
   // Event Attendees routes
   app.get("/api/events/:id/attendees", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
