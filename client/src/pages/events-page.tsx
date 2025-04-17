@@ -44,6 +44,7 @@ export default function EventsPage() {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Fetch events
   const { data: events, isLoading } = useQuery<Event[]>({
@@ -128,15 +129,30 @@ export default function EventsPage() {
       <main className="flex-1 pb-16 md:pb-0 overflow-y-auto">
         <div className="py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
-              <Button 
-                onClick={() => setIsCreateDialogOpen(true)}
-                className="inline-flex items-center"
-              >
-                <Plus className="h-5 w-5 mr-1" />
-                New Event
-              </Button>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="inline-flex items-center"
+                >
+                  <Plus className="h-5 w-5 mr-1" />
+                  New Event
+                </Button>
+              </div>
+              
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <Input
+                  type="text"
+                  placeholder="Search events..."
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </div>
             
             {isLoading ? (
@@ -175,7 +191,12 @@ export default function EventsPage() {
               </div>
             ) : (
               <div className="mt-6 space-y-4">
-                {events?.map((event) => (
+                {events
+                ?.filter(event => 
+                  event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  event.location.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((event) => (
                   <Card key={event.id} className="overflow-hidden">
                     <Link href={`/events/${event.id}`}>
                       <a className="block">
