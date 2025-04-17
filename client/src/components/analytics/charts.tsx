@@ -13,6 +13,7 @@ import {
   ResponsiveContainer 
 } from "recharts";
 import { Event, Lead } from "@shared/schema";
+import { User } from "lucide-react";
 
 // Define colors for charts
 const COLORS = {
@@ -125,6 +126,68 @@ export function LeadsByEventChart({ events, leads }: LeadsByEventChartProps) {
         <Tooltip />
         <Legend />
         <Bar dataKey="value" name="Leads" fill={COLORS.primary} />
+      </RechartsBarChart>
+    </ResponsiveContainer>
+  );
+}
+
+interface LeadsByEmployeeChartProps {
+  leads: Lead[];
+}
+
+export function LeadsByEmployeeChart({ leads }: LeadsByEmployeeChartProps) {
+  const [chartData, setChartData] = useState<any[]>([]);
+  
+  useEffect(() => {
+    // Count leads by employee
+    const employeeLeadCounts = new Map<string, number>();
+    
+    leads.forEach(lead => {
+      if (lead.employeeName) {
+        const employeeName = lead.employeeName;
+        const count = employeeLeadCounts.get(employeeName) || 0;
+        employeeLeadCounts.set(employeeName, count + 1);
+      } else {
+        // If no employee name is set, count under "Unassigned"
+        const count = employeeLeadCounts.get("Unassigned") || 0;
+        employeeLeadCounts.set("Unassigned", count + 1);
+      }
+    });
+    
+    // Format data for the chart
+    const data = Array.from(employeeLeadCounts.entries())
+      .map(([name, count]) => ({
+        name,
+        value: count,
+      }))
+      .sort((a, b) => b.value - a.value); // Sort by count descending
+    
+    setChartData(data);
+  }, [leads]);
+  
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <RechartsBarChart
+        data={chartData}
+        layout="vertical"
+        margin={{
+          top: 5,
+          right: 30,
+          left: 75, // Add more space for employee names
+          bottom: 5,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis type="number" />
+        <YAxis 
+          type="category" 
+          dataKey="name" 
+          tick={{ fontSize: 12 }}
+          width={70}
+        />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="value" name="Leads Collected" fill={COLORS.secondary} />
       </RechartsBarChart>
     </ResponsiveContainer>
   );

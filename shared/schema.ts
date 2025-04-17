@@ -61,6 +61,8 @@ export const leads = pgTable("leads", {
   notes: text("notes"),
   score: text("score").notNull().default("medium"), // low, medium, high
   userId: integer("user_id").notNull(), // foreign key to users
+  employeeId: integer("employee_id"), // ID of employee who collected the lead
+  employeeName: text("employee_name"), // Name of employee who collected the lead
   avatar: text("avatar"), // Will be undefined when null in the frontend
   source: text("source").notNull().default("manual"), // manual, scan, import
   createdAt: timestamp("created_at").notNull().defaultNow(),

@@ -38,6 +38,8 @@ const leadFormSchema = z.object({
   notes: z.string().optional(),
   score: z.enum(["low", "medium", "high"]).default("medium"),
   source: z.enum(["manual", "scan", "import"]).default("manual"),
+  employeeId: z.number().optional(),
+  employeeName: z.string().optional(),
 });
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
