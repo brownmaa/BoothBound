@@ -202,8 +202,8 @@ export default function EventDetailPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[event?.status as keyof typeof statusColors]}`}>
-                            {event?.status.charAt(0).toUpperCase() + event?.status.slice(1)}
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${event?.status ? statusColors[event.status as keyof typeof statusColors] : statusColors.active}`}>
+                            {event?.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : 'Active'}
                           </span>
                         </div>
                         <div className="mt-2 flex items-center text-sm text-gray-500">
@@ -223,7 +223,7 @@ export default function EventDetailPage() {
                           <Users className="flex-shrink-0 mr-1.5 h-5 w-5" />
                           <p>{event?.leadCount} total leads collected</p>
                         </div>
-                        {event?.todayLeadCount > 0 && (
+                        {event?.todayLeadCount && event.todayLeadCount > 0 && (
                           <div className="mt-2 flex items-center text-sm text-gray-500">
                             <Clock className="flex-shrink-0 mr-1.5 h-5 w-5" />
                             <p>{event.todayLeadCount} leads collected today</p>
@@ -345,7 +345,7 @@ export default function EventDetailPage() {
                                 >
                                   <div className="flex items-center">
                                     <Avatar>
-                                      <AvatarImage src={lead.avatar} />
+                                      <AvatarImage src={lead.avatar || undefined} />
                                       <AvatarFallback>
                                         {`${lead.firstName.charAt(0)}${lead.lastName.charAt(0)}`}
                                       </AvatarFallback>
@@ -356,8 +356,8 @@ export default function EventDetailPage() {
                                     </div>
                                   </div>
                                   <div className="flex items-center">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${scoreColors[lead.score as keyof typeof scoreColors]}`}>
-                                      {lead.score.charAt(0).toUpperCase() + lead.score.slice(1)}
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${lead.score ? scoreColors[lead.score as keyof typeof scoreColors] : scoreColors.medium}`}>
+                                      {lead.score ? lead.score.charAt(0).toUpperCase() + lead.score.slice(1) : 'Medium'}
                                     </span>
                                     <Link href={`/leads/${lead.id}`}>
                                       <a className="ml-4 text-sm text-primary-600 hover:text-primary-900">
