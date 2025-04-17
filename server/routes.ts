@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertEventSchema, insertLeadSchema } from "@shared/schema";
+import { insertEventSchema, insertLeadSchema, insertEventAttendeeSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import * as Papa from "papaparse";
@@ -495,6 +495,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Event Attendees routes
+  app.get("/api/events/:id/attendees", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const eventId = parseInt(req.params.id);
+    
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+    
+    try {
+      const event = await storage.getEvent(eventId, userId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      
+      const attendees = await storage.getEventAttendees(eventId);
+      res.json(attendees);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch event attendees" });
+    }
+  });
+
+  app.get("/api/attendees/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const attendeeId = parseInt(req.params.id);
+    
+    if (isNaN(attendeeId)) {
+      return res.status(400).json({ error: "Invalid attendee ID" });
+    }
+    
+    try {
+      const attendee = await storage.getEventAttendee(attendeeId);
+      if (!attendee) {
+        return res.status(404).json({ error: "Attendee not found" });
+      }
+      
+      // Verify the user has access to the event
+      const event = await storage.getEvent(attendee.eventId, req.user!.id);
+      if (!event) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+      
+      res.json(attendee);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch attendee" });
+    }
+  });
+
+  app.post("/api/events/:id/attendees", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const eventId = parseInt(req.params.id);
+    
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+    
+    try {
+      const event = await storage.getEvent(eventId, userId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      
+      const attendeeData = { ...req.body, eventId };
+      const validatedData = insertEventAttendeeSchema.parse(attendeeData);
+      const attendee = await storage.createEventAttendee(validatedData);
+      
+      res.status(201).json(attendee);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create event attendee" });
+      }
+    }
+  });
+
+  app.put("/api/attendees/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const attendeeId = parseInt(req.params.id);
+    
+    if (isNaN(attendeeId)) {
+      return res.status(400).json({ error: "Invalid attendee ID" });
+    }
+    
+    try {
+      const existingAttendee = await storage.getEventAttendee(attendeeId);
+      if (!existingAttendee) {
+        return res.status(404).json({ error: "Attendee not found" });
+      }
+      
+      // Verify the user has access to the event
+      const event = await storage.getEvent(existingAttendee.eventId, userId);
+      if (!event) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+      
+      const updatedAttendee = await storage.updateEventAttendee(attendeeId, req.body);
+      res.json(updatedAttendee);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update attendee" });
+    }
+  });
+
+  app.delete("/api/attendees/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const attendeeId = parseInt(req.params.id);
+    
+    if (isNaN(attendeeId)) {
+      return res.status(400).json({ error: "Invalid attendee ID" });
+    }
+    
+    try {
+      const existingAttendee = await storage.getEventAttendee(attendeeId);
+      if (!existingAttendee) {
+        return res.status(404).json({ error: "Attendee not found" });
+      }
+      
+      // Verify the user has access to the event
+      const event = await storage.getEvent(existingAttendee.eventId, userId);
+      if (!event) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+      
+      const deleted = await storage.deleteEventAttendee(attendeeId);
+      if (deleted) {
+        res.status(204).send();
+      } else {
+        res.status(500).json({ error: "Failed to delete attendee" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete attendee" });
+    }
+  });
+
   // Batch Lead Scoring endpoint
   app.post("/api/events/:id/leads/score", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

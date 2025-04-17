@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, events, type Event, type InsertEvent, leads, type Lead, type InsertLead } from "@shared/schema";
+import { users, type User, type InsertUser, events, type Event, type InsertEvent, leads, type Lead, type InsertLead, eventAttendees, type EventAttendee, type InsertEventAttendee } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
