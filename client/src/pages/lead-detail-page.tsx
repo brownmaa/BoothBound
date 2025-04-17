@@ -148,8 +148,16 @@ export default function LeadDetailPage() {
   }
 
   // Format date
-  const formatDate = (date: Date) => {
-    return format(new Date(date), "MMM d, yyyy 'at' h:mm a");
+  const formatDate = (dateString: string | Date) => {
+    if (!dateString) return "Unknown date";
+    try {
+      // Make sure we have a valid date object or string
+      const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+      return format(date, "MMM d, yyyy 'at' h:mm a");
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Invalid date";
+    }
   };
 
   // Get icon for source
@@ -203,11 +211,15 @@ export default function LeadDetailPage() {
                     <h2 className="text-xl font-semibold">{`${lead.firstName || 'Unknown'} ${lead.lastName || ''}`}</h2>
                     <div className="text-gray-600 flex items-center">
                       <SourceIcon className="mr-1 h-4 w-4" />
-                      <span className="capitalize mr-2">{lead.source}</span>
-                      <span className="text-gray-400 mx-1">•</span>
-                      <Badge className={scoreColors[lead.score as keyof typeof scoreColors]}>
-                        {lead.score.charAt(0).toUpperCase() + lead.score.slice(1)}
-                      </Badge>
+                      <span className="capitalize mr-2">{lead.source || 'Unknown'}</span>
+                      {lead.score && (
+                        <>
+                          <span className="text-gray-400 mx-1">•</span>
+                          <Badge className={scoreColors[lead.score as keyof typeof scoreColors]}>
+                            {lead.score.charAt(0).toUpperCase() + lead.score.slice(1)}
+                          </Badge>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
