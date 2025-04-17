@@ -193,8 +193,479 @@ export class MemStorage implements IStorage {
   
   // Helper methods for initializing sample data
   private initSampleData() {
-    // This is just for setup and no sample data will be created
-    // Actual data will be created by users through the application
+    // Create a test user if none exists yet
+    if (this.users.size === 0) {
+      const testUser: User = {
+        id: 1,
+        username: "demo",
+        password: "$2a$10$JrJsqA9I1DgfX1R5mZMl8O99jB/lWW8ZXOToM3OCsGz.QI2zqv2ky", // password: "password123"
+        name: "Demo User",
+        email: "demo@example.com",
+        company: "BoothBound Inc.",
+        role: "Sales Manager"
+      };
+      this.users.set(testUser.id, testUser);
+      this.userIdCounter = 2;
+      
+      // Create sample events
+      const events: Event[] = [
+        {
+          id: 1,
+          name: "TechExpo 2025",
+          description: "Annual technology exhibition showcasing the latest innovations",
+          location: "San Francisco Convention Center",
+          startDate: new Date("2025-05-15"),
+          endDate: new Date("2025-05-17"),
+          status: "active",
+          leadCount: 8,
+          todayLeadCount: 3,
+          userId: testUser.id
+        },
+        {
+          id: 2,
+          name: "Marketing Summit",
+          description: "Conference for marketing professionals",
+          location: "Chicago Hilton",
+          startDate: new Date("2025-06-10"),
+          endDate: new Date("2025-06-12"),
+          status: "active",
+          leadCount: 5,
+          todayLeadCount: 2,
+          userId: testUser.id
+        },
+        {
+          id: 3,
+          name: "SaaS Connect",
+          description: "Networking event for SaaS companies",
+          location: "New York Marriott",
+          startDate: new Date("2025-04-05"),
+          endDate: new Date("2025-04-07"),
+          status: "completed",
+          leadCount: 12,
+          todayLeadCount: 0,
+          userId: testUser.id
+        }
+      ];
+      
+      events.forEach(event => {
+        this.events.set(event.id, event);
+      });
+      this.eventIdCounter = 4;
+      
+      // Create sample leads
+      const leads: Lead[] = [
+        // TechExpo leads
+        {
+          id: 1,
+          firstName: "John",
+          lastName: "Smith",
+          email: "john.smith@example.com",
+          phone: "555-123-4567",
+          title: "CTO",
+          company: "TechCorp",
+          eventId: 1,
+          notes: "Interested in enterprise plan",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "Sarah Johnson",
+          source: "scan",
+          createdAt: new Date("2025-05-15T10:30:00")
+        },
+        {
+          id: 2,
+          firstName: "Emily",
+          lastName: "Davis",
+          email: "emily.davis@example.com",
+          phone: "555-234-5678",
+          title: "Product Manager",
+          company: "InnovateSoft",
+          eventId: 1,
+          notes: "Looking for integration options",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "Michael Brown",
+          source: "manual",
+          createdAt: new Date("2025-05-15T14:15:00")
+        },
+        {
+          id: 3,
+          firstName: "Robert",
+          lastName: "Wilson",
+          email: "robert.wilson@example.com",
+          phone: "555-345-6789",
+          title: "IT Director",
+          company: "Enterprise Solutions",
+          eventId: 1,
+          notes: "Needs follow-up about security features",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "Sarah Johnson",
+          source: "scan",
+          createdAt: new Date("2025-05-16T09:45:00")
+        },
+        {
+          id: 4,
+          firstName: "Jennifer",
+          lastName: "Martinez",
+          email: "jennifer.martinez@example.com",
+          phone: "555-456-7890",
+          title: "Marketing Director",
+          company: "Growth Strategies",
+          eventId: 1,
+          notes: "Interested in analytics capabilities",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "David Wilson",
+          source: "import",
+          createdAt: new Date("2025-05-16T11:30:00")
+        },
+        {
+          id: 5,
+          firstName: "Michael",
+          lastName: "Brown",
+          email: "michael.brown@example.com",
+          phone: "555-567-8901",
+          title: "Sales Director",
+          company: "RevenuePlus",
+          eventId: 1,
+          notes: "Looking for sales automation tools",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "Sarah Johnson",
+          source: "scan",
+          createdAt: new Date("2025-05-16T15:45:00")
+        },
+        {
+          id: 6,
+          firstName: "Jessica",
+          lastName: "Taylor",
+          email: "jessica.taylor@example.com",
+          phone: "555-678-9012",
+          title: "CEO",
+          company: "StartupX",
+          eventId: 1,
+          notes: "Potential strategic partnership",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "Michael Brown",
+          source: "manual",
+          createdAt: new Date("2025-05-17T10:15:00")
+        },
+        {
+          id: 7,
+          firstName: "David",
+          lastName: "Anderson",
+          email: "david.anderson@example.com",
+          phone: "555-789-0123",
+          title: "Developer Advocate",
+          company: "DevTools Inc",
+          eventId: 1,
+          notes: "Inquired about API documentation",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "Lisa Zhang",
+          source: "scan",
+          createdAt: new Date("2025-05-17T13:30:00")
+        },
+        {
+          id: 8,
+          firstName: "Sarah",
+          lastName: "Wilson",
+          email: "sarah.wilson@example.com",
+          phone: "555-890-1234",
+          title: "UX Designer",
+          company: "Design Solutions",
+          eventId: 1,
+          notes: "Provided feedback on UI",
+          score: "low",
+          userId: testUser.id,
+          employeeName: "Lisa Zhang",
+          source: "manual",
+          createdAt: new Date(new Date().setHours(new Date().getHours() - 1))
+        },
+        
+        // Marketing Summit leads
+        {
+          id: 9,
+          firstName: "Thomas",
+          lastName: "Clark",
+          email: "thomas.clark@example.com",
+          phone: "555-901-2345",
+          title: "CMO",
+          company: "BrandMasters",
+          eventId: 2,
+          notes: "Needs case studies",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "David Wilson",
+          source: "scan",
+          createdAt: new Date(new Date().setHours(new Date().getHours() - 3))
+        },
+        {
+          id: 10,
+          firstName: "Amanda",
+          lastName: "Lewis",
+          email: "amanda.lewis@example.com",
+          phone: "555-012-3456",
+          title: "Content Strategist",
+          company: "ContentWave",
+          eventId: 2,
+          notes: "Interested in content automation features",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "Michael Brown",
+          source: "import",
+          createdAt: new Date(new Date().setHours(new Date().getHours() - 4))
+        },
+        {
+          id: 11,
+          firstName: "Brian",
+          lastName: "Johnson",
+          email: "brian.johnson@example.com",
+          phone: "555-123-4567",
+          title: "Digital Marketing Manager",
+          company: "DigitalEdge",
+          eventId: 2,
+          notes: "Wants demo of analytics dashboard",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "Sarah Johnson",
+          source: "scan",
+          createdAt: new Date("2025-06-10T14:30:00")
+        },
+        {
+          id: 12,
+          firstName: "Laura",
+          lastName: "Roberts",
+          email: "laura.roberts@example.com",
+          phone: "555-234-5678",
+          title: "Email Marketing Specialist",
+          company: "EmailPro",
+          eventId: 2,
+          notes: "Interested in email integration",
+          score: "low",
+          userId: testUser.id,
+          employeeName: "Lisa Zhang",
+          source: "manual",
+          createdAt: new Date("2025-06-11T09:15:00")
+        },
+        {
+          id: 13,
+          firstName: "Kevin",
+          lastName: "Miller",
+          email: "kevin.miller@example.com",
+          phone: "555-345-6789",
+          title: "Social Media Manager",
+          company: "SocialBoost",
+          eventId: 2,
+          notes: "Looking for social media analytics",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "David Wilson",
+          source: "scan",
+          createdAt: new Date("2025-06-11T16:45:00")
+        },
+        
+        // SaaS Connect leads
+        {
+          id: 14,
+          firstName: "Stephanie",
+          lastName: "Adams",
+          email: "stephanie.adams@example.com",
+          phone: "555-456-7890",
+          title: "Product Director",
+          company: "CloudServices",
+          eventId: 3,
+          notes: "Potential integration partner",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "Sarah Johnson",
+          source: "scan",
+          createdAt: new Date("2025-04-05T11:15:00")
+        },
+        {
+          id: 15,
+          firstName: "Daniel",
+          lastName: "Garcia",
+          email: "daniel.garcia@example.com",
+          phone: "555-567-8901",
+          title: "VP Engineering",
+          company: "TechStack",
+          eventId: 3,
+          notes: "Discussed technical architecture",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "Michael Brown",
+          source: "manual",
+          createdAt: new Date("2025-04-05T14:30:00")
+        },
+        {
+          id: 16,
+          firstName: "Michelle",
+          lastName: "Wong",
+          email: "michelle.wong@example.com",
+          phone: "555-678-9012",
+          title: "CRO",
+          company: "GrowthHackers",
+          eventId: 3,
+          notes: "Interested in pricing strategies",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "Lisa Zhang",
+          source: "scan",
+          createdAt: new Date("2025-04-05T16:15:00")
+        },
+        {
+          id: 17,
+          firstName: "Christopher",
+          lastName: "Baker",
+          email: "christopher.baker@example.com",
+          phone: "555-789-0123",
+          title: "Director of Operations",
+          company: "OptiOps",
+          eventId: 3,
+          notes: "Looking for workflow automation",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "David Wilson",
+          source: "import",
+          createdAt: new Date("2025-04-06T09:30:00")
+        },
+        {
+          id: 18,
+          firstName: "Rachel",
+          lastName: "Evans",
+          email: "rachel.evans@example.com",
+          phone: "555-890-1234",
+          title: "Customer Success Manager",
+          company: "ClientFirst",
+          eventId: 3,
+          notes: "Interested in onboarding automation",
+          score: "low",
+          userId: testUser.id,
+          employeeName: "Sarah Johnson",
+          source: "scan",
+          createdAt: new Date("2025-04-06T11:45:00")
+        },
+        {
+          id: 19,
+          firstName: "Brandon",
+          lastName: "Lewis",
+          email: "brandon.lewis@example.com",
+          phone: "555-901-2345",
+          title: "Sales Engineer",
+          company: "SalesTech",
+          eventId: 3,
+          notes: "Technical sales discussion",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "Michael Brown", 
+          source: "manual",
+          createdAt: new Date("2025-04-06T14:30:00")
+        },
+        {
+          id: 20,
+          firstName: "Melissa",
+          lastName: "Chen",
+          email: "melissa.chen@example.com",
+          phone: "555-012-3456",
+          title: "Product Marketing Manager",
+          company: "MarketMakers",
+          eventId: 3,
+          notes: "Requested product roadmap",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "Lisa Zhang",
+          source: "scan",
+          createdAt: new Date("2025-04-06T16:15:00")
+        },
+        {
+          id: 21,
+          firstName: "Joshua",
+          lastName: "Kim",
+          email: "joshua.kim@example.com",
+          phone: "555-123-4567",
+          title: "Business Development",
+          company: "PartnerPro",
+          eventId: 3,
+          notes: "Discussed partnership opportunities",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "David Wilson",
+          source: "manual",
+          createdAt: new Date("2025-04-07T09:30:00")
+        },
+        {
+          id: 22,
+          firstName: "Olivia",
+          lastName: "Smith",
+          email: "olivia.smith@example.com",
+          phone: "555-234-5678",
+          title: "Marketing Coordinator",
+          company: "BrandBoost",
+          eventId: 3,
+          notes: "Looking for case studies",
+          score: "low",
+          userId: testUser.id,
+          employeeName: "Sarah Johnson",
+          source: "scan",
+          createdAt: new Date("2025-04-07T11:45:00")
+        },
+        {
+          id: 23,
+          firstName: "Ethan",
+          lastName: "Davis",
+          email: "ethan.davis@example.com",
+          phone: "555-345-6789",
+          title: "Developer Relations",
+          company: "DevConnect",
+          eventId: 3,
+          notes: "Interested in integration documentation",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "Michael Brown",
+          source: "import",
+          createdAt: new Date("2025-04-07T14:15:00")
+        },
+        {
+          id: 24,
+          firstName: "Sofia",
+          lastName: "Martinez",
+          email: "sofia.martinez@example.com",
+          phone: "555-456-7890",
+          title: "User Research Lead",
+          company: "UserInsight",
+          eventId: 3,
+          notes: "Provided feedback on UX",
+          score: "medium",
+          userId: testUser.id,
+          employeeName: "Lisa Zhang",
+          source: "manual",
+          createdAt: new Date("2025-04-07T16:30:00")
+        },
+        {
+          id: 25,
+          firstName: "William",
+          lastName: "Johnson",
+          email: "william.johnson@example.com",
+          phone: "555-567-8901",
+          title: "IT Manager",
+          company: "InfoSystems",
+          eventId: 3,
+          notes: "Security and compliance questions",
+          score: "high",
+          userId: testUser.id,
+          employeeName: "David Wilson",
+          source: "scan",
+          createdAt: new Date("2025-04-07T17:15:00")
+        }
+      ];
+      
+      leads.forEach(lead => {
+        this.leads.set(lead.id, lead);
+      });
+      this.leadIdCounter = 26;
+    }
   }
 }
 
