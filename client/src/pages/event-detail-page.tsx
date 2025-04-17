@@ -40,9 +40,9 @@ export default function EventDetailPage() {
   const { toast } = useToast();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  
+
   const eventId = parseInt(id || "0");
-  
+
   // Fetch event details
   const { 
     data: event, 
@@ -52,7 +52,7 @@ export default function EventDetailPage() {
     queryKey: ["/api/events", eventId],
     enabled: !!eventId,
   });
-  
+
   // Fetch event leads
   const {
     data: leads,
@@ -61,7 +61,7 @@ export default function EventDetailPage() {
     queryKey: ["/api/events", eventId, "leads"],
     enabled: !!eventId,
   });
-  
+
   // Delete event mutation
   const deleteEventMutation = useMutation({
     mutationFn: async () => {
@@ -83,12 +83,12 @@ export default function EventDetailPage() {
       });
     },
   });
-  
+
   // Handle delete event
   const handleDeleteEvent = () => {
     deleteEventMutation.mutate();
   };
-  
+
   // If event not found or error
   if (eventError) {
     return (
@@ -114,11 +114,11 @@ export default function EventDetailPage() {
       </div>
     );
   }
-  
+
   // Format date range for display
   const formatDateRange = (startDate?: Date, endDate?: Date) => {
     if (!startDate || !endDate) return "";
-    
+
     // If same month and year
     if (
       startDate.getMonth() === endDate.getMonth() &&
@@ -135,25 +135,25 @@ export default function EventDetailPage() {
       return `${format(startDate, "MMM d, yyyy")} - ${format(endDate, "MMM d, yyyy")}`;
     }
   };
-  
+
   // Status badge color mapping
   const statusColors = {
     active: "bg-green-100 text-green-800",
     upcoming: "bg-yellow-100 text-yellow-800",
     completed: "bg-gray-100 text-gray-800",
   };
-  
+
   // Score badge color mapping
   const scoreColors = {
     high: "bg-green-100 text-green-800",
     medium: "bg-yellow-100 text-yellow-800",
     low: "bg-gray-100 text-gray-800",
   };
-  
+
   return (
     <div className="flex flex-col h-screen">
       <MobileHeader title="Event Details" />
-      
+
       <main className="flex-1 pb-16 md:pb-0 overflow-y-auto">
         <div className="py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,14 +196,14 @@ export default function EventDetailPage() {
                     </Button>
                   </div>
                 </div>
-                
+
                 <Card className="mt-6">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${event?.status ? statusColors[event.status as keyof typeof statusColors] : statusColors.active}`}>
-                            {event?.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : 'Active'}
+                            {event?.status ? `${event.status.charAt(0).toUpperCase()}${event.status.slice(1)}` : 'Active'}
                           </span>
                         </div>
                         <div className="mt-2 flex items-center text-sm text-gray-500">
@@ -231,7 +231,7 @@ export default function EventDetailPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     {event?.status === "active" && (
                       <div className="mt-6">
                         <Button 
@@ -245,14 +245,14 @@ export default function EventDetailPage() {
                     )}
                   </CardContent>
                 </Card>
-                
+
                 <div className="mt-6">
                   <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="w-full">
                       <TabsTrigger value="overview" className="flex-1">Overview</TabsTrigger>
                       <TabsTrigger value="leads" className="flex-1">Leads ({leads?.length || 0})</TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="overview" className="mt-4">
                       <Card>
                         <CardHeader>
@@ -269,7 +269,7 @@ export default function EventDetailPage() {
                               <p className="text-2xl font-bold">{event?.todayLeadCount || 0}</p>
                             </div>
                           </div>
-                          
+
                           <div className="mt-6">
                             <h3 className="text-lg font-medium">Actions</h3>
                             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -291,7 +291,7 @@ export default function EventDetailPage() {
                         </CardContent>
                       </Card>
                     </TabsContent>
-                    
+
                     <TabsContent value="leads" className="mt-4">
                       <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
@@ -380,7 +380,7 @@ export default function EventDetailPage() {
           </div>
         </div>
       </main>
-      
+
       {/* Confirm Delete Dialog */}
       <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
         <AlertDialogContent>
@@ -401,7 +401,7 @@ export default function EventDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
+
       <MobileNav />
     </div>
   );
