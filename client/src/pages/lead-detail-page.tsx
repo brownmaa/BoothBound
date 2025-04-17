@@ -38,6 +38,10 @@ import {
   RefreshCw,
   Loader2,
   UserPlus,
+  MapPin,
+  Globe,
+  Linkedin,
+  BookOpen,
 } from "lucide-react";
 import { Lead } from "@shared/schema";
 import { NotesEditor } from "@/components/leads/notes-editor";
@@ -438,6 +442,55 @@ export default function LeadDetailPage() {
                     <p className="text-sm text-gray-500 italic">
                       No AI scoring explanation available. Click "Re-Score" to generate an explanation.
                     </p>
+                  )}
+                </div>
+              </div>
+              
+              {/* LinkedIn Profile Information */}
+              <div className="mt-6 border-t border-gray-200 pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base font-medium">LinkedIn Information</h3>
+                  {lead.linkedIn && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(lead.linkedIn || '', '_blank')}
+                    >
+                      <Linkedin className="mr-2 h-4 w-4" />
+                      View Profile
+                    </Button>
+                  )}
+                </div>
+                <div className="p-4 bg-gray-50 rounded-md">
+                  {(lead.linkedIn || lead.location || lead.industry || lead.bio) ? (
+                    <div className="space-y-3">
+                      {lead.location && (
+                        <div className="flex items-start">
+                          <MapPin className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
+                          <span className="text-sm text-gray-900">{lead.location}</span>
+                        </div>
+                      )}
+                      {lead.industry && (
+                        <div className="flex items-start">
+                          <Globe className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
+                          <span className="text-sm text-gray-900">{lead.industry}</span>
+                        </div>
+                      )}
+                      {lead.bio && (
+                        <div className="flex items-start">
+                          <BookOpen className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
+                          <div className="text-sm text-gray-900">
+                            <p className="font-medium mb-1">Professional Bio</p>
+                            <p className="whitespace-pre-wrap">{lead.bio}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-500 italic">No LinkedIn information available yet.</p>
+                      <p className="text-sm text-gray-500 mt-1">Click "Enrich Data" to retrieve LinkedIn profile data.</p>
+                    </div>
                   )}
                 </div>
               </div>

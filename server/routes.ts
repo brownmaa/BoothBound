@@ -574,11 +574,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Additional LinkedIn data
         if ("location" in enrichmentData && enrichmentData.location) {
-          updateData.location = enrichmentData.location;
+          updateData.location = enrichmentData.location as string;
         }
         
         if ("industry" in enrichmentData && enrichmentData.industry) {
-          updateData.industry = enrichmentData.industry;
+          updateData.industry = enrichmentData.industry as string;
         }
         
         if ("bio" in enrichmentData && enrichmentData.bio) {
@@ -588,14 +588,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else {
             updateData.notes = `LinkedIn Bio: ${enrichmentData.bio}`;
           }
+
+          // Store the bio separately as well
+          updateData.bio = enrichmentData.bio as string;
         }
         
         if ("linkedinUrl" in enrichmentData && enrichmentData.linkedinUrl) {
-          updateData.linkedIn = enrichmentData.linkedinUrl;
+          updateData.linkedIn = enrichmentData.linkedinUrl as string;
         }
         
         if ("phoneNumber" in enrichmentData && enrichmentData.phoneNumber && !existingLead.phone) {
-          updateData.phone = enrichmentData.phoneNumber;
+          updateData.phone = enrichmentData.phoneNumber as string;
         }
         
         const updatedLead = await storage.updateLead(leadId, updateData);
