@@ -89,6 +89,11 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   aiScoreExplanation: text("ai_score_explanation"), // AI-generated explanation for the score
   aiSimilarityScore: text("ai_similarity_score"), // Raw numerical similarity score from AI
+  // LinkedIn specific fields
+  linkedIn: text("linkedin_url"), // LinkedIn profile URL
+  location: text("location"), // Location from LinkedIn profile
+  industry: text("industry"), // Industry from LinkedIn profile
+  bio: text("bio"), // Biography or summary from LinkedIn
 });
 
 export const insertLeadSchema = createInsertSchema(leads).omit({ 

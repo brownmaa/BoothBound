@@ -565,18 +565,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (enrichmentData) {
         const updateData: Partial<Lead> = {};
         
+        // Basic info from Clearbit
         if (enrichmentData.firstName) updateData.firstName = enrichmentData.firstName;
         if (enrichmentData.lastName) updateData.lastName = enrichmentData.lastName;
         if (enrichmentData.title) updateData.title = enrichmentData.title;
         if (enrichmentData.company) updateData.company = enrichmentData.company;
         if (enrichmentData.avatar) updateData.avatar = enrichmentData.avatar;
         
+        // Additional LinkedIn data
+        if ("location" in enrichmentData && enrichmentData.location) {
+          updateData.location = enrichmentData.location;
+        }
+        
+        if ("industry" in enrichmentData && enrichmentData.industry) {
+          updateData.industry = enrichmentData.industry;
+        }
+        
+        if ("bio" in enrichmentData && enrichmentData.bio) {
+          // If we already have notes, append the bio
+          if (existingLead.notes) {
+            updateData.notes = `${existingLead.notes}\n\nLinkedIn Bio: ${enrichmentData.bio}`;
+          } else {
+            updateData.notes = `LinkedIn Bio: ${enrichmentData.bio}`;
+          }
+        }
+        
+        if ("linkedinUrl" in enrichmentData && enrichmentData.linkedinUrl) {
+          updateData.linkedIn = enrichmentData.linkedinUrl;
+        }
+        
+        if ("phoneNumber" in enrichmentData && enrichmentData.phoneNumber && !existingLead.phone) {
+          updateData.phone = enrichmentData.phoneNumber;
+        }
+        
         const updatedLead = await storage.updateLead(leadId, updateData);
         
         res.json({
           success: true,
           lead: updatedLead,
-          enriched: Object.keys(updateData)
+          enriched: Object.keys(updateData),
+          source: "linkedin" in enrichmentData ? "LinkedIn" : "Clearbit"
         });
       } else {
         res.json({
