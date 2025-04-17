@@ -66,6 +66,8 @@ export const leads = pgTable("leads", {
   avatar: text("avatar"), // Will be undefined when null in the frontend
   source: text("source").notNull().default("manual"), // manual, scan, import
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  aiScoreExplanation: text("ai_score_explanation"), // AI-generated explanation for the score
+  aiSimilarityScore: text("ai_similarity_score"), // Raw numerical similarity score from AI
 });
 
 export const insertLeadSchema = createInsertSchema(leads).omit({ 

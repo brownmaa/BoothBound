@@ -7,6 +7,7 @@ import { z } from "zod";
 import multer from "multer";
 import * as Papa from "papaparse";
 import fs from "fs";
+import { scoreLead } from "./openai";
 
 // Set up file upload middleware
 const upload = multer({ dest: "uploads/" });
