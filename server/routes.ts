@@ -121,6 +121,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/leads/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const leadId = parseInt(req.params.id);
+    
+    if (isNaN(leadId)) {
+      return res.status(400).json({ error: "Invalid lead ID" });
+    }
+    
+    try {
+      const lead = await storage.getLead(leadId);
+      if (!lead || lead.userId !== userId) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+      res.json(lead);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lead" });
+    }
+  });
+
   app.get("/api/events/:id/leads", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const userId = req.user!.id;
