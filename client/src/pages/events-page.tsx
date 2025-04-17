@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { format } from "date-fns";
-import { Plus, Calendar, User, ChevronRight } from "lucide-react";
+import { Plus, Calendar, User, ChevronRight, Search } from "lucide-react";
 import { Event, insertEventSchema } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
