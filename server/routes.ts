@@ -4,6 +4,12 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertEventSchema, insertLeadSchema } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import { parse } from "papaparse";
+import fs from "fs";
+
+// Set up file upload middleware
+const upload = multer({ dest: "uploads/" });
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes

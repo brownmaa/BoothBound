@@ -13,6 +13,7 @@ import EventDetailPage from "@/pages/event-detail-page";
 import LeadsPage from "@/pages/leads-page";
 import LeadDetailPage from "@/pages/lead-detail-page";
 import LeadEditPage from "@/pages/lead-edit-page";
+import EventEditPage from "@/pages/event-edit-page";
 import AnalyticsPage from "@/pages/analytics-page";
 import ScannerPage from "@/pages/scanner-page";
 
@@ -21,7 +22,7 @@ function Router() {
     <Switch>
       <ProtectedRoute path="/" component={DashboardPage} />
       <ProtectedRoute path="/events" component={EventsPage} />
-      <ProtectedRoute path="/events/edit/:id" component={EventsPage} />
+      <ProtectedRoute path="/events/edit/:id" component={EventEditPage} />
       <ProtectedRoute path="/events/:id" component={EventDetailPage} />
       <ProtectedRoute path="/leads" component={LeadsPage} />
       <ProtectedRoute path="/leads/edit/:id" component={LeadEditPage} />
