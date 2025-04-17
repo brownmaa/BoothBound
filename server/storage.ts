@@ -25,6 +25,13 @@ export interface IStorage {
   updateLead(id: number, lead: Partial<Lead>): Promise<Lead | undefined>;
   deleteLead(id: number): Promise<boolean>;
   
+  // Event Attendee methods
+  getEventAttendees(eventId: number): Promise<EventAttendee[]>;
+  getEventAttendee(id: number): Promise<EventAttendee | undefined>;
+  createEventAttendee(attendee: InsertEventAttendee): Promise<EventAttendee>;
+  updateEventAttendee(id: number, attendee: Partial<EventAttendee>): Promise<EventAttendee | undefined>;
+  deleteEventAttendee(id: number): Promise<boolean>;
+  
   // Session store
   sessionStore: session.SessionStore;
 }
@@ -33,18 +40,22 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private events: Map<number, Event>;
   private leads: Map<number, Lead>;
+  private eventAttendees: Map<number, EventAttendee>;
   private userIdCounter: number;
   private eventIdCounter: number;
   private leadIdCounter: number;
+  private eventAttendeeIdCounter: number;
   sessionStore: session.SessionStore;
 
   constructor() {
     this.users = new Map();
     this.events = new Map();
     this.leads = new Map();
+    this.eventAttendees = new Map();
     this.userIdCounter = 1;
     this.eventIdCounter = 1;
     this.leadIdCounter = 1;
+    this.eventAttendeeIdCounter = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // 24 hours
     });
@@ -191,8 +202,163 @@ export class MemStorage implements IStorage {
     return this.leads.delete(id);
   }
   
+  // Event Attendee methods
+  async getEventAttendees(eventId: number): Promise<EventAttendee[]> {
+    return Array.from(this.eventAttendees.values()).filter(
+      (attendee) => attendee.eventId === eventId
+    );
+  }
+  
+  async getEventAttendee(id: number): Promise<EventAttendee | undefined> {
+    return this.eventAttendees.get(id);
+  }
+  
+  async createEventAttendee(insertAttendee: InsertEventAttendee): Promise<EventAttendee> {
+    const id = this.eventAttendeeIdCounter++;
+    const attendee: EventAttendee = {
+      ...insertAttendee,
+      id,
+      createdAt: new Date(),
+    };
+    this.eventAttendees.set(id, attendee);
+    return attendee;
+  }
+  
+  async updateEventAttendee(id: number, attendeeUpdate: Partial<EventAttendee>): Promise<EventAttendee | undefined> {
+    const existingAttendee = this.eventAttendees.get(id);
+    if (!existingAttendee) return undefined;
+    
+    const updatedAttendee = { ...existingAttendee, ...attendeeUpdate };
+    this.eventAttendees.set(id, updatedAttendee);
+    return updatedAttendee;
+  }
+  
+  async deleteEventAttendee(id: number): Promise<boolean> {
+    return this.eventAttendees.delete(id);
+  }
+  
   // Helper methods for initializing sample data
   private initSampleData() {
+    // Create sample attendees
+    const initEventAttendees = () => {
+      // Sample attendees for TechExpo
+      const techExpoAttendees: EventAttendee[] = [
+        {
+          id: 1,
+          eventId: 1,
+          name: "Sarah Johnson",
+          email: "sarah.johnson@boothbound.com",
+          role: "Sales Rep",
+          notes: "Handling product demos",
+          isActive: true,
+          createdAt: new Date("2025-05-01T10:00:00")
+        },
+        {
+          id: 2,
+          eventId: 1,
+          name: "Michael Brown",
+          email: "michael.brown@boothbound.com",
+          role: "Technical Specialist",
+          notes: "Answering technical questions",
+          isActive: true,
+          createdAt: new Date("2025-05-01T10:05:00")
+        },
+        {
+          id: 3,
+          eventId: 1,
+          name: "David Wilson",
+          email: "david.wilson@boothbound.com",
+          role: "Sales Manager",
+          notes: "Managing the booth schedule",
+          isActive: true,
+          createdAt: new Date("2025-05-01T10:10:00")
+        },
+        {
+          id: 4,
+          eventId: 1,
+          name: "Lisa Zhang",
+          email: "lisa.zhang@boothbound.com",
+          role: "Product Marketing",
+          notes: "Handling marketing materials",
+          isActive: true,
+          createdAt: new Date("2025-05-01T10:15:00")
+        }
+      ];
+
+      // Sample attendees for Marketing Summit
+      const marketingSummitAttendees: EventAttendee[] = [
+        {
+          id: 5,
+          eventId: 2,
+          name: "David Wilson",
+          email: "david.wilson@boothbound.com",
+          role: "Marketing Director",
+          notes: "Leading the team",
+          isActive: true,
+          createdAt: new Date("2025-05-20T14:00:00")
+        },
+        {
+          id: 6,
+          eventId: 2,
+          name: "Sarah Johnson",
+          email: "sarah.johnson@boothbound.com",
+          role: "Content Specialist",
+          notes: "Handling content distribution",
+          isActive: true,
+          createdAt: new Date("2025-05-20T14:05:00")
+        },
+        {
+          id: 7,
+          eventId: 2,
+          name: "Michael Brown",
+          email: "michael.brown@boothbound.com",
+          role: "Analytics Specialist",
+          notes: "Demos of analytics features",
+          isActive: true,
+          createdAt: new Date("2025-05-20T14:10:00")
+        }
+      ];
+
+      // Sample attendees for SaaS Connect
+      const saasConnectAttendees: EventAttendee[] = [
+        {
+          id: 8,
+          eventId: 3,
+          name: "Michael Brown",
+          email: "michael.brown@boothbound.com",
+          role: "Technical Lead",
+          notes: "Handling technical demos",
+          isActive: true,
+          createdAt: new Date("2025-03-20T09:00:00")
+        },
+        {
+          id: 9,
+          eventId: 3,
+          name: "Lisa Zhang",
+          email: "lisa.zhang@boothbound.com",
+          role: "Product Specialist",
+          notes: "Product demonstrations",
+          isActive: true,
+          createdAt: new Date("2025-03-20T09:05:00")
+        }
+      ];
+
+      const allAttendees = [
+        ...techExpoAttendees,
+        ...marketingSummitAttendees,
+        ...saasConnectAttendees
+      ];
+
+      allAttendees.forEach(attendee => {
+        this.eventAttendees.set(attendee.id, attendee);
+      });
+
+      this.eventAttendeeIdCounter = allAttendees.length + 1;
+    };
+
+    // Initialize sample attendees
+    initEventAttendees();
+    
     // Create a test user if none exists yet
     if (this.users.size === 0) {
       // Using our custom hashing function, the password is "password123"

@@ -40,6 +40,26 @@ export const events = pgTable("events", {
   leadScoringCriteria: text("lead_scoring_criteria"), // Custom AI scoring criteria
 });
 
+// Event Attendees model
+export const eventAttendees = pgTable("event_attendees", {
+  id: serial("id").primaryKey(),
+  eventId: integer("event_id").notNull(), // foreign key to events
+  name: text("name").notNull(),
+  email: text("email"),
+  role: text("role"), // Their role at the event (e.g., "Sales Rep", "Product Demo", "Booth Manager")
+  notes: text("notes"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertEventAttendeeSchema = createInsertSchema(eventAttendees).omit({ 
+  id: true,
+  createdAt: true
+});
+
+export type InsertEventAttendee = z.infer<typeof insertEventAttendeeSchema>;
+export type EventAttendee = typeof eventAttendees.$inferSelect;
+
 export const insertEventSchema = createInsertSchema(events).omit({ 
   id: true,
   leadCount: true,
