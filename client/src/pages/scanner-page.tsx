@@ -70,6 +70,7 @@ export default function ScannerPage() {
       notes: "",
       score: "medium",
       source: "manual",
+      employeeName: user?.name || "",
     },
   });
 
@@ -438,6 +439,15 @@ export default function ScannerPage() {
                       </div>
                       
                       <div className="space-y-2">
+                        <Label htmlFor="employeeName">Employee Name</Label>
+                        <Input
+                          id="employeeName"
+                          placeholder="Who collected this lead"
+                          {...form.register("employeeName")}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
                         <Label htmlFor="notes">Notes</Label>
                         <Textarea
                           id="notes"
@@ -560,6 +570,16 @@ export default function ScannerPage() {
                   onChange={(e) => form.setValue("title", e.target.value)}
                 />
               </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="dialog-employeeName">Employee Name</Label>
+              <Input
+                id="dialog-employeeName"
+                placeholder="Who collected this lead"
+                value={form.getValues("employeeName") || ""}
+                onChange={(e) => form.setValue("employeeName", e.target.value)}
+              />
             </div>
             
             <div className="space-y-2">
