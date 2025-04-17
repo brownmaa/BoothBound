@@ -273,6 +273,86 @@ export default function EventDetailPage() {
                           </div>
 
                           <div className="mt-6">
+                            <h3 className="text-lg font-medium">AI Lead Scoring Criteria</h3>
+                            <p className="text-sm text-gray-500 mt-1">
+                              Define what makes a lead valuable for this event. The AI will use this criteria to score all leads.
+                            </p>
+                            <div className="mt-3">
+                              <textarea 
+                                className="w-full min-h-[120px] p-3 border rounded-md text-sm"
+                                placeholder="Example: A valuable lead is a decision-maker (Director level or above) from the financial industry who has expressed interest in our analytics products. They have budget authority and are looking to implement a solution in the next 6 months."
+                                defaultValue={event?.leadScoringCriteria || ""}
+                                onBlur={(e) => {
+                                  const criteria = e.target.value.trim();
+                                  if (criteria !== event?.leadScoringCriteria) {
+                                    // Update the scoring criteria
+                                    fetch(`/api/events/${eventId}/scoring-criteria`, {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ criteria })
+                                    })
+                                    .then(res => {
+                                      if (!res.ok) throw new Error('Failed to update scoring criteria');
+                                      return res.json();
+                                    })
+                                    .then(() => {
+                                      toast({
+                                        title: "Scoring criteria updated",
+                                        description: "Lead scoring criteria has been updated successfully.",
+                                      });
+                                      // Refresh the event data
+                                      queryClient.invalidateQueries({ queryKey: ["/api/events", eventId] });
+                                    })
+                                    .catch(err => {
+                                      toast({
+                                        title: "Error updating criteria",
+                                        description: err.message,
+                                        variant: "destructive",
+                                      });
+                                    });
+                                  }
+                                }}
+                              />
+                              <div className="flex justify-end mt-2">
+                                <Button 
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => {
+                                    // Trigger batch AI lead scoring
+                                    fetch(`/api/events/${eventId}/leads/score`, {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' }
+                                    })
+                                    .then(res => {
+                                      if (!res.ok) throw new Error('Failed to score leads');
+                                      return res.json();
+                                    })
+                                    .then(data => {
+                                      const { results } = data;
+                                      toast({
+                                        title: "Leads scored successfully",
+                                        description: `Processed ${results.processed}/${results.total} leads (High: ${results.high}, Medium: ${results.medium}, Low: ${results.low})`,
+                                      });
+                                      // Refresh the leads data
+                                      queryClient.invalidateQueries({ queryKey: ["/api/events", eventId, "leads"] });
+                                    })
+                                    .catch(err => {
+                                      toast({
+                                        title: "Error scoring leads",
+                                        description: err.message,
+                                        variant: "destructive",
+                                      });
+                                    });
+                                  }}
+                                >
+                                  <Award className="mr-2 h-4 w-4" />
+                                  Re-score all leads with these criteria
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-6">
                             <h3 className="text-lg font-medium">Actions</h3>
                             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <Button variant="outline" className="flex items-center">
