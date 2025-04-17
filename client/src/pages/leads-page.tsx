@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { MobileHeader } from "@/components/mobile-header";
@@ -5,35 +6,78 @@ import { MobileNav } from "@/components/mobile-nav";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { Lead } from "@shared/schema";
-import { Search, Users, ChevronRight } from "lucide-react";
+import { Lead, Event } from "@shared/schema";
+import { Search, Users, ChevronRight, Download } from "lucide-react";
 
 export default function LeadsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "company" | "event">("all");
+  const [selectedFilter, setSelectedFilter] = useState("");
   
-  // Fetch leads
-  const { data: leads, isLoading } = useQuery<Lead[]>({
+  // Fetch leads and events
+  const { data: leads, isLoading: leadsLoading } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
   });
+
+  const { data: events } = useQuery<Event[]>({
+    queryKey: ["/api/events"],
+  });
   
-  // Filter leads by search query
+  // Get unique companies
+  const uniqueCompanies = [...new Set(leads?.map(lead => lead.company).filter(Boolean))];
+  
+  // Filter leads
   const filteredLeads = leads?.filter((lead) => {
     const fullName = `${lead.firstName} ${lead.lastName}`.toLowerCase();
     const company = (lead.company || "").toLowerCase();
     const email = lead.email.toLowerCase();
     const query = searchQuery.toLowerCase();
     
-    return fullName.includes(query) || company.includes(query) || email.includes(query);
+    let matchesFilter = true;
+    if (filterType === "company" && selectedFilter) {
+      matchesFilter = lead.company === selectedFilter;
+    } else if (filterType === "event" && selectedFilter) {
+      matchesFilter = lead.eventId === parseInt(selectedFilter);
+    }
+    
+    return matchesFilter && (fullName.includes(query) || company.includes(query) || email.includes(query));
   });
+
+  // Export leads as CSV
+  const exportLeads = () => {
+    if (!filteredLeads?.length) return;
+    
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Company", "Title", "Score", "Notes", "Event", "Created At"];
+    const csvContent = [
+      headers.join(","),
+      ...filteredLeads.map(lead => [
+        lead.firstName,
+        lead.lastName,
+        lead.email,
+        lead.phone || "",
+        lead.company || "",
+        lead.title || "",
+        lead.score,
+        (lead.notes || "").replace(/,/g, ";"),
+        events?.find(e => e.id === lead.eventId)?.name || lead.eventId,
+        new Date(lead.createdAt).toLocaleDateString()
+      ].join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-export-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
   
   // Score badge color mapping
   const scoreColors = {
@@ -49,24 +93,66 @@ export default function LeadsPage() {
       <main className="flex-1 pb-16 md:pb-0 overflow-y-auto">
         <div className="py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <h1 className="text-2xl font-semibold text-gray-900">All Leads</h1>
               
-              <div className="mt-4 md:mt-0 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
+              <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-x-4 md:space-y-0">
+                <div className="flex-1 md:w-64">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Search leads..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-                <Input
-                  type="text"
-                  placeholder="Search leads..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+
+                <Select value={filterType} onValueChange={(value: "all" | "company" | "event") => {
+                  setFilterType(value);
+                  setSelectedFilter("");
+                }}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Leads</SelectItem>
+                    <SelectItem value="company">By Company</SelectItem>
+                    <SelectItem value="event">By Event</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {filterType !== "all" && (
+                  <Select value={selectedFilter} onValueChange={setSelectedFilter}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder={`Select ${filterType}...`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filterType === "company" ? (
+                        uniqueCompanies.map(company => (
+                          <SelectItem key={company} value={company}>{company}</SelectItem>
+                        ))
+                      ) : (
+                        events?.map(event => (
+                          <SelectItem key={event.id} value={event.id.toString()}>{event.name}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                <Button onClick={exportLeads} className="whitespace-nowrap">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
               </div>
             </div>
             
-            {isLoading ? (
+            {leadsLoading ? (
               <div className="mt-6 space-y-4">
                 {Array(5).fill(0).map((_, i) => (
                   <Card key={i}>
@@ -101,7 +187,7 @@ export default function LeadsPage() {
                       <Search className="mx-auto h-12 w-12 text-gray-400" />
                       <h3 className="mt-2 text-sm font-medium text-gray-900">No results found</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        Try adjusting your search query.
+                        Try adjusting your search or filters.
                       </p>
                     </>
                   )}
