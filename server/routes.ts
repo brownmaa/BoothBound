@@ -12,8 +12,13 @@ import { scoreLead } from "./openai";
 // Set up file upload middleware
 const upload = multer({ dest: "uploads/" });
 
-// Import OpenAI service if needed for transcription
+// Import OpenAI service for transcription and AI features
 import OpenAI from "openai";
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -475,6 +480,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error scoring lead:", error);
       res.status(500).json({ error: "Failed to score lead" });
+    }
+  });
+  
+  // Audio Transcription endpoint
+  app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.file) return res.status(400).json({ error: "No audio file uploaded" });
+    
+    try {
+      // Create a readable stream from the uploaded file
+      const audioReadStream = fs.createReadStream(req.file.path);
+      
+      // Request transcription from OpenAI's Whisper model
+      const transcription = await openai.audio.transcriptions.create({
+        file: audioReadStream,
+        model: "whisper-1",
+      });
+      
+      // Clean up the uploaded file
+      fs.unlinkSync(req.file.path);
+      
+      res.json({ 
+        text: transcription.text,
+        duration: 0 // OpenAI's Whisper model doesn't return duration directly
+      });
+    } catch (error) {
+      console.error("Transcription error:", error);
+      
+      // Clean up the uploaded file if it exists
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+      
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ 
+        error: "Failed to transcribe audio",
+        details: errorMessage
+      });
     }
   });
   

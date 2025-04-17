@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Play, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Mic, Square, Play, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface AudioRecorderProps {
@@ -13,64 +13,54 @@ export function AudioRecorder({ onTranscriptionComplete, disabled = false }: Aud
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const { toast } = useToast();
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const { toast } = useToast();
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (mediaRecorderRef.current && isRecording) {
-        mediaRecorderRef.current.stop();
-      }
-      if (audioURL) {
-        URL.revokeObjectURL(audioURL);
-      }
-    };
-  }, [isRecording, audioURL]);
-
+  
   const startRecording = async () => {
     audioChunksRef.current = [];
     setAudioURL(null);
     
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
       
-      mediaRecorderRef.current.ondataavailable = (event) => {
+      mediaRecorder.addEventListener("dataavailable", (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
-      };
+      });
       
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        const url = URL.createObjectURL(audioBlob);
-        setAudioURL(url);
-      };
+      mediaRecorder.addEventListener("stop", () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setAudioURL(audioUrl);
+        
+        // Stop all tracks from the stream to release the microphone
+        stream.getTracks().forEach(track => track.stop());
+      });
       
-      mediaRecorderRef.current.start();
+      mediaRecorder.start();
       setIsRecording(true);
     } catch (error) {
       console.error("Error accessing microphone:", error);
       toast({
         title: "Microphone Access Error",
-        description: "Please allow microphone access to record audio notes.",
+        description: "Unable to access your microphone. Please check your browser permissions.",
         variant: "destructive",
       });
     }
   };
-
+  
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      
-      // Stop all audio tracks to turn off the microphone
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
     }
   };
-
+  
   const transcribeAudio = async () => {
     if (!audioURL) return;
     
