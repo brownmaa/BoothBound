@@ -216,8 +216,13 @@ export class MemStorage implements IStorage {
   async createEventAttendee(insertAttendee: InsertEventAttendee): Promise<EventAttendee> {
     const id = this.eventAttendeeIdCounter++;
     const attendee: EventAttendee = {
-      ...insertAttendee,
       id,
+      eventId: insertAttendee.eventId,
+      name: insertAttendee.name,
+      email: insertAttendee.email || null,
+      role: insertAttendee.role || null,
+      notes: insertAttendee.notes || null,
+      isActive: insertAttendee.isActive ?? true,
       createdAt: new Date(),
     };
     this.eventAttendees.set(id, attendee);
