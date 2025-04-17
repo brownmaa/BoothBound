@@ -11,13 +11,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { Lead, Event } from "@shared/schema";
-import { Search, Users, ChevronRight, Download } from "lucide-react";
+import { Search, Users, ChevronRight, Download, ArrowUpDown } from "lucide-react";
 import { CSVImport } from "@/components/leads/csv-import";
 
 export default function LeadsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"all" | "company" | "event">("all");
   const [selectedFilter, setSelectedFilter] = useState("");
+  const [sortField, setSortField] = useState<"name" | "company" | "score">("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   
   // Fetch leads and events
   const { data: leads, isLoading: leadsLoading } = useQuery<Lead[]>({
@@ -46,6 +48,30 @@ export default function LeadsPage() {
     }
     
     return matchesFilter && (fullName.includes(query) || company.includes(query) || email.includes(query));
+  })?.sort((a, b) => {
+    // Sort by selected field
+    if (sortField === "name") {
+      const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+      const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+      return sortDirection === "asc" 
+        ? nameA.localeCompare(nameB) 
+        : nameB.localeCompare(nameA);
+    } else if (sortField === "company") {
+      const companyA = (a.company || "").toLowerCase();
+      const companyB = (b.company || "").toLowerCase();
+      return sortDirection === "asc" 
+        ? companyA.localeCompare(companyB) 
+        : companyB.localeCompare(companyA);
+    } else if (sortField === "score") {
+      // Convert score to numeric value for sorting (high=3, medium=2, low=1)
+      const scoreValues: {[key: string]: number} = { high: 3, medium: 2, low: 1 };
+      const scoreA = scoreValues[a.score] || 0;
+      const scoreB = scoreValues[b.score] || 0;
+      return sortDirection === "asc" 
+        ? scoreA - scoreB 
+        : scoreB - scoreA;
+    }
+    return 0;
   });
 
   // Export leads as CSV
@@ -110,6 +136,64 @@ export default function LeadsPage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"
                     />
+                  </div>
+                </div>
+                
+                {/* Sort controls */}
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">Sort by:</span>
+                  <div className="flex border border-gray-200 rounded-md">
+                    <Button 
+                      variant={sortField === "name" ? "default" : "ghost"} 
+                      size="sm"
+                      className="rounded-none rounded-l-md border-r border-r-gray-200"
+                      onClick={() => {
+                        if (sortField === "name") {
+                          setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                        } else {
+                          setSortField("name");
+                          setSortDirection("asc");
+                        }
+                      }}
+                    >
+                      Name {sortField === "name" && (
+                        <ArrowUpDown className="ml-1 h-3 w-3" />
+                      )}
+                    </Button>
+                    <Button 
+                      variant={sortField === "company" ? "default" : "ghost"} 
+                      size="sm"
+                      className="rounded-none border-r border-r-gray-200"
+                      onClick={() => {
+                        if (sortField === "company") {
+                          setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                        } else {
+                          setSortField("company");
+                          setSortDirection("asc");
+                        }
+                      }}
+                    >
+                      Company {sortField === "company" && (
+                        <ArrowUpDown className="ml-1 h-3 w-3" />
+                      )}
+                    </Button>
+                    <Button 
+                      variant={sortField === "score" ? "default" : "ghost"} 
+                      size="sm"
+                      className="rounded-none rounded-r-md"
+                      onClick={() => {
+                        if (sortField === "score") {
+                          setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                        } else {
+                          setSortField("score");
+                          setSortDirection("asc");
+                        }
+                      }}
+                    >
+                      Score {sortField === "score" && (
+                        <ArrowUpDown className="ml-1 h-3 w-3" />
+                      )}
+                    </Button>
                   </div>
                 </div>
 
