@@ -414,7 +414,7 @@ export default function EventDetailPage() {
                               <Award className="mr-2 h-4 w-4" />
                               AI Score All
                             </Button>
-                            <CSVImport eventId={eventId ? parseInt(eventId) : undefined} />
+                            <CSVImport eventId={eventId ? Number(eventId) : undefined} />
                             <Button 
                               onClick={() => navigate(`/scanner/${eventId}`)}
                               disabled={event?.status !== "active"}
@@ -497,7 +497,7 @@ export default function EventDetailPage() {
                     <TabsContent value="team" className="mt-4">
                       <Card>
                         <CardContent className="p-6">
-                          <AttendeeList eventId={eventId} />
+                          <AttendeeList eventId={Number(eventId)} />
                         </CardContent>
                       </Card>
                     </TabsContent>

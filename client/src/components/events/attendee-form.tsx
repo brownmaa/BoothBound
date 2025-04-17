@@ -118,7 +118,11 @@ export function AttendeeForm({ eventId, attendee, onClose }: AttendeeFormProps) 
             <FormItem>
               <FormLabel>Role</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Sales Rep, Technical Demo" {...field} />
+                <Input 
+                  placeholder="e.g., Sales Rep, Technical Demo" 
+                  {...field} 
+                  value={field.value || ""}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -132,7 +136,11 @@ export function AttendeeForm({ eventId, attendee, onClose }: AttendeeFormProps) 
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea placeholder="Additional notes or instructions" {...field} />
+                <Textarea 
+                  placeholder="Additional notes or instructions" 
+                  {...field} 
+                  value={field.value || ""}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

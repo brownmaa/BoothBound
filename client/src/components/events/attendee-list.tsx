@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { EventAttendee } from "@shared/schema";
 import { Plus, Edit, Trash2, UserMinus, UserCheck } from "lucide-react";
-import { AttendeeForm } from "./attendee-form";
+import { AttendeeForm } from "@/components/events/attendee-form";
 
 interface AttendeeListProps {
   eventId: number;
