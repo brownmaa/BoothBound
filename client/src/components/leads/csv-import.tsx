@@ -40,7 +40,7 @@ export function CSVImport({ eventId }: CSVImportProps) {
       const text = event.target?.result as string;
       if (text) {
         // Simple CSV parsing
-        const lines = text.split("\\n");
+        const lines = text.split("\n");
         const result = lines.map(line => line.split(",").map(value => value.trim()));
         setPreview(result.slice(0, 5)); // Show first 5 rows as preview
       }
@@ -53,7 +53,12 @@ export function CSVImport({ eventId }: CSVImportProps) {
       const endpoint = eventId 
         ? `/api/events/${eventId}/leads/import` 
         : `/api/leads/import`;
-      const res = await apiRequest("POST", endpoint, formData, true);
+      // Use form data upload
+      const res = await fetch(endpoint, {
+        method: "POST",
+        body: formData,
+        credentials: "include"
+      });
       return await res.json();
     },
     onSuccess: (data: { imported: number }) => {

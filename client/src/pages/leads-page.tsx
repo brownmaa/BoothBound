@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { Lead, Event } from "@shared/schema";
 import { Search, Users, ChevronRight, Download } from "lucide-react";
+import { CSVImport } from "@/components/leads/csv-import";
 
 export default function LeadsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -145,10 +146,13 @@ export default function LeadsPage() {
                   </Select>
                 )}
 
-                <Button onClick={exportLeads} className="whitespace-nowrap">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
+                <div className="flex space-x-2">
+                  <CSVImport />
+                  <Button onClick={exportLeads} className="whitespace-nowrap">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export CSV
+                  </Button>
+                </div>
               </div>
             </div>
             

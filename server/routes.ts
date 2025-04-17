@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { insertEventSchema, insertLeadSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
-import { parse } from "papaparse";
+import * as Papa from "papaparse";
 import fs from "fs";
 
 // Set up file upload middleware
@@ -278,6 +278,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ error: "Failed to delete lead" });
+    }
+  });
+
+  // CSV Import endpoints
+  app.post("/api/leads/import", upload.single("file"), async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    
+    try {
+      const fileContent = fs.readFileSync(req.file.path, "utf8");
+      const result = Papa.parse(fileContent, { header: true, skipEmptyLines: true });
+      
+      if (result.errors.length > 0) {
+        return res.status(400).json({
+          error: "CSV parsing errors",
+          details: result.errors
+        });
+      }
+      
+      const leads = result.data.filter(
+        (row: any) => row.firstName && row.lastName && row.email
+      );
+      
+      if (leads.length === 0) {
+        return res.status(400).json({ error: "No valid leads found in CSV" });
+      }
+      
+      const importedLeads = [];
+      for (const leadData of leads) {
+        try {
+          // Type casting and validation
+          const data: Record<string, any> = leadData as Record<string, any>;
+          
+          const leadRecord = {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone: data.phone || null,
+            title: data.title || null,
+            company: data.company || null,
+            notes: data.notes || null,
+            score: data.score || "medium",
+            source: "csv-import",
+            userId,
+            eventId: data.eventId || 0
+          };
+          
+          const lead = await storage.createLead(leadRecord);
+          importedLeads.push(lead);
+        } catch (err) {
+          console.error("Error importing lead:", err);
+        }
+      }
+      
+      // Clean up the uploaded file
+      fs.unlinkSync(req.file.path);
+      
+      res.status(201).json({ 
+        imported: importedLeads.length,
+        total: leads.length 
+      });
+    } catch (err) {
+      console.error("Error processing CSV import:", err);
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+      res.status(500).json({ error: "Error processing CSV file" });
+    }
+  });
+  
+  app.post("/api/events/:id/leads/import", upload.single("file"), async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    
+    const eventId = parseInt(req.params.id);
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+    
+    try {
+      const event = await storage.getEvent(eventId, userId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      
+      const fileContent = fs.readFileSync(req.file.path, "utf8");
+      const result = Papa.parse(fileContent, { header: true, skipEmptyLines: true });
+      
+      if (result.errors.length > 0) {
+        return res.status(400).json({
+          error: "CSV parsing errors",
+          details: result.errors
+        });
+      }
+      
+      const leads = result.data.filter(
+        (row: any) => row.firstName && row.lastName && row.email
+      );
+      
+      if (leads.length === 0) {
+        return res.status(400).json({ error: "No valid leads found in CSV" });
+      }
+      
+      const importedLeads = [];
+      for (const leadData of leads) {
+        try {
+          // Type casting and validation
+          const data: Record<string, any> = leadData as Record<string, any>;
+          
+          const leadRecord = {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone: data.phone || null,
+            title: data.title || null,
+            company: data.company || null,
+            notes: data.notes || null,
+            score: data.score || "medium",
+            source: "csv-import",
+            userId,
+            eventId
+          };
+          
+          const lead = await storage.createLead(leadRecord);
+          importedLeads.push(lead);
+        } catch (err) {
+          console.error("Error importing lead:", err);
+        }
+      }
+      
+      // Clean up the uploaded file
+      fs.unlinkSync(req.file.path);
+      
+      res.status(201).json({ 
+        imported: importedLeads.length,
+        total: leads.length 
+      });
+    } catch (err) {
+      console.error("Error processing CSV import:", err);
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+      res.status(500).json({ error: "Error processing CSV file" });
     }
   });
 
