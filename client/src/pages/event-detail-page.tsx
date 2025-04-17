@@ -33,6 +33,7 @@ import {
   QrCode
 } from "lucide-react";
 import { Event, Lead } from "@shared/schema";
+import { CSVImport } from "@/components/leads/csv-import";
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -296,14 +297,17 @@ export default function EventDetailPage() {
                       <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                           <CardTitle>Collected Leads</CardTitle>
-                          <Button 
-                            onClick={() => navigate(`/scanner/${eventId}`)}
-                            disabled={event?.status !== "active"}
-                            className="flex items-center"
-                          >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Lead
-                          </Button>
+                          <div className="flex space-x-2">
+                            <CSVImport eventId={eventId ? parseInt(eventId) : undefined} />
+                            <Button 
+                              onClick={() => navigate(`/scanner/${eventId}`)}
+                              disabled={event?.status !== "active"}
+                              className="flex items-center"
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add Lead
+                            </Button>
+                          </div>
                         </CardHeader>
                         <CardContent>
                           {leadsLoading ? (
