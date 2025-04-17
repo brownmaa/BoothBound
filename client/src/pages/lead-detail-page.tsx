@@ -40,6 +40,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { Lead } from "@shared/schema";
+import { NotesEditor } from "@/components/leads/notes-editor";
 
 const scoreColors = {
   high: "bg-green-100 text-green-800",
@@ -60,6 +61,7 @@ export default function LeadDetailPage() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [isEnriching, setIsEnriching] = useState(false);
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
   
   const leadId = parseInt(id || "0");
   
@@ -97,6 +99,29 @@ export default function LeadDetailPage() {
     },
   });
   
+  // Notes update mutation
+  const updateNotesMutation = useMutation({
+    mutationFn: async (notes: string) => {
+      const res = await apiRequest("PATCH", `/api/leads/${leadId}`, { notes });
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Notes updated",
+        description: "Lead notes have been successfully updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
+      setIsEditingNotes(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update lead notes. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Enrich lead mutation
   const enrichMutation = useMutation({
     mutationFn: async () => {
@@ -329,14 +354,37 @@ export default function LeadDetailPage() {
               </div>
 
               <div className="mt-6 border-t border-gray-200 pt-4">
-                <h3 className="text-base font-medium mb-2">Notes</h3>
-                <div className="p-3 bg-gray-50 rounded-md">
-                  {lead.notes ? (
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{lead.notes}</p>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No notes available</p>
-                  )}
-                </div>
+                {isEditingNotes ? (
+                  <NotesEditor
+                    initialNotes={lead.notes}
+                    leadId={lead.id}
+                    onSave={async (notes) => {
+                      await updateNotesMutation.mutateAsync(notes);
+                    }}
+                    onCancel={() => setIsEditingNotes(false)}
+                  />
+                ) : (
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-base font-medium">Notes</h3>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setIsEditingNotes(true)}
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        {lead.notes ? 'Edit Notes' : 'Add Notes'}
+                      </Button>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-md">
+                      {lead.notes ? (
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{lead.notes}</p>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic">No notes available. Click 'Add Notes' to create some.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="mt-6 border-t border-gray-200 pt-4">
