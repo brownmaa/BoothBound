@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, getQueryFn } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { 
   Calendar, 
@@ -66,6 +66,7 @@ export default function LeadDetailPage() {
     error: leadError
   } = useQuery<Lead>({
     queryKey: ["/api/leads", leadId],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!leadId,
   });
 
@@ -295,31 +296,26 @@ export default function LeadDetailPage() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => {
-                      // Trigger AI rescoring
-                      fetch(`/api/leads/${lead.id}/score`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                      })
-                      .then(res => {
-                        if (!res.ok) throw new Error('Failed to score lead');
-                        return res.json();
-                      })
-                      .then(data => {
+                    onClick={async () => {
+                      try {
+                        // Trigger AI rescoring using apiRequest
+                        const res = await apiRequest('POST', `/api/leads/${lead.id}/score`);
+                        const data = await res.json();
+                        
                         toast({
                           title: "Lead scored successfully",
                           description: `Lead quality: ${data.scoring.score.toUpperCase()}`,
                         });
+                        
                         // Refresh the lead data
                         queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
-                      })
-                      .catch(err => {
+                      } catch (err) {
                         toast({
                           title: "Error scoring lead",
                           description: err.message,
                           variant: "destructive",
                         });
-                      });
+                      }
                     }}
                   >
                     <Award className="mr-2 h-4 w-4" />

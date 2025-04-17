@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, getQueryFn } from "@/lib/queryClient";
 import { z } from "zod";
 import { Lead, EventAttendee } from "@shared/schema";
 
@@ -61,12 +61,14 @@ export default function LeadEditPage() {
   // Fetch lead details
   const { data: lead, isLoading: leadLoading } = useQuery<Lead>({
     queryKey: ["/api/leads", leadId],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!leadId,
   });
   
   // Fetch event attendees for dropdown
   const { data: attendees, isLoading: attendeesLoading } = useQuery<EventAttendee[]>({
     queryKey: ["/api/events", lead?.eventId, "attendees"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!lead?.eventId,
   });
   
