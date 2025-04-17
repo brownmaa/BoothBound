@@ -37,6 +37,7 @@ export const events = pgTable("events", {
   userId: integer("user_id").notNull(), // foreign key to users
   leadCount: integer("lead_count").notNull().default(0),
   todayLeadCount: integer("today_lead_count").notNull().default(0),
+  leadScoringCriteria: text("lead_scoring_criteria"), // Custom AI scoring criteria
 });
 
 export const insertEventSchema = createInsertSchema(events).omit({ 

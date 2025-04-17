@@ -92,11 +92,15 @@ const SCORE_THRESHOLDS = {
 };
 
 /**
- * Scores a lead based on their profile data compared to an ideal customer profile
+ * Scores a lead based on their profile data compared to event-specific criteria
  * @param lead The lead to score
+ * @param eventCriteria Optional event-specific criteria for scoring, falls back to default if not provided
  * @returns Score category (high, medium, low) and explanation
  */
-export async function scoreLead(lead: Lead): Promise<{ 
+export async function scoreLead(
+  lead: Lead, 
+  eventCriteria?: string
+): Promise<{ 
   score: "high" | "medium" | "low"; 
   explanation: string;
   similarityScore: number;
@@ -111,9 +115,8 @@ export async function scoreLead(lead: Lead): Promise<{
       Notes: ${lead.notes || ""}
     `;
     
-    // For this prototype, we'll use a fixed ideal customer profile
-    // In a production app, you might want to allow customizing this per event or campaign
-    const idealCustomerDescription = `
+    // Use event-specific criteria if provided, otherwise use default
+    const idealCustomerDescription = eventCriteria || `
       A decision maker (Director level or above) from a mid to large-sized company
       in the technology, finance, or healthcare industries. They have budget authority
       and are actively looking for solutions to improve their business operations.
@@ -142,7 +145,7 @@ export async function scoreLead(lead: Lead): Promise<{
       I'm analyzing a potential sales lead with the following profile:
       ${leadProfile}
       
-      Compare this to our ideal customer profile:
+      Compare this to our ideal customer profile criteria:
       ${idealCustomerDescription}
       
       Based on the profile data, explain in 2-3 short sentences why this lead is scored as "${scoreCategory}" quality (similarity score: ${Math.round(similarity * 100)}%).

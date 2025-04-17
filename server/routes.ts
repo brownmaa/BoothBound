@@ -469,8 +469,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Unauthorized" });
       }
       
-      // Score the lead with AI
-      const aiScoring = await scoreLead(existingLead);
+      // Get event to check for custom scoring criteria
+      const event = await storage.getEvent(existingLead.eventId, userId);
+      
+      // Score the lead with AI, using event-specific criteria if available
+      const aiScoring = await scoreLead(existingLead, event?.leadScoringCriteria || undefined);
       const updatedLead = await storage.updateLead(leadId, {
         score: aiScoring.score,
         aiScoreExplanation: aiScoring.explanation,
@@ -528,7 +531,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Process each lead in the batch
         const batchPromises = batch.map(async (lead) => {
           try {
-            const aiScoring = await scoreLead(lead);
+            // Use event-specific criteria for scoring
+            const aiScoring = await scoreLead(lead, event.leadScoringCriteria || undefined);
             await storage.updateLead(lead.id, {
               score: aiScoring.score,
               aiScoreExplanation: aiScoring.explanation,
@@ -559,6 +563,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error batch scoring leads:", error);
       res.status(500).json({ error: "Failed to score leads" });
+    }
+  });
+
+  // Update event lead scoring criteria endpoint
+  app.post("/api/events/:id/scoring-criteria", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const eventId = parseInt(req.params.id);
+    
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+    
+    try {
+      const event = await storage.getEvent(eventId, userId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      
+      // Validate request body
+      const criteria = req.body.criteria;
+      if (!criteria || typeof criteria !== "string") {
+        return res.status(400).json({ error: "Invalid criteria. Please provide a text description of what makes a lead valuable." });
+      }
+      
+      // Update event with new criteria
+      const updatedEvent = await storage.updateEvent(eventId, {
+        leadScoringCriteria: criteria
+      });
+      
+      res.json({
+        success: true,
+        event: updatedEvent
+      });
+    } catch (error) {
+      console.error("Error updating scoring criteria:", error);
+      res.status(500).json({ error: "Failed to update scoring criteria" });
     }
   });
 
