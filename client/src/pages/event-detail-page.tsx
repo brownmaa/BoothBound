@@ -347,11 +347,11 @@ export default function EventDetailPage() {
                                     <Avatar>
                                       <AvatarImage src={lead.avatar || undefined} />
                                       <AvatarFallback>
-                                        {`${lead.firstName.charAt(0)}${lead.lastName.charAt(0)}`}
+                                        {`${lead.firstName ? lead.firstName.charAt(0) : ''}${lead.lastName ? lead.lastName.charAt(0) : ''}`}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="ml-3">
-                                      <p className="text-sm font-medium text-gray-900">{`${lead.firstName} ${lead.lastName}`}</p>
+                                      <p className="text-sm font-medium text-gray-900">{`${lead.firstName || 'Unknown'} ${lead.lastName || ''}`}</p>
                                       <p className="text-sm text-gray-500">{lead.company || lead.title}</p>
                                     </div>
                                   </div>
@@ -359,11 +359,12 @@ export default function EventDetailPage() {
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${lead.score ? scoreColors[lead.score as keyof typeof scoreColors] : scoreColors.medium}`}>
                                       {lead.score ? lead.score.charAt(0).toUpperCase() + lead.score.slice(1) : 'Medium'}
                                     </span>
-                                    <Link href={`/leads/${lead.id}`}>
-                                      <a className="ml-4 text-sm text-primary-600 hover:text-primary-900">
-                                        View
-                                      </a>
-                                    </Link>
+                                    <button 
+                                      className="ml-4 text-sm text-primary-600 hover:text-primary-900"
+                                      onClick={() => navigate(`/leads/${lead.id}`)}
+                                    >
+                                      View
+                                    </button>
                                   </div>
                                 </div>
                               ))}
