@@ -290,6 +290,66 @@ export default function LeadDetailPage() {
               </div>
               
               <div className="mt-6 border-t border-gray-200 pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base font-medium">AI Lead Score</h3>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      // Trigger AI rescoring
+                      fetch(`/api/leads/${lead.id}/score`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                      })
+                      .then(res => {
+                        if (!res.ok) throw new Error('Failed to score lead');
+                        return res.json();
+                      })
+                      .then(data => {
+                        toast({
+                          title: "Lead scored successfully",
+                          description: `Lead quality: ${data.scoring.score.toUpperCase()}`,
+                        });
+                        // Refresh the lead data
+                        queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
+                      })
+                      .catch(err => {
+                        toast({
+                          title: "Error scoring lead",
+                          description: err.message,
+                          variant: "destructive",
+                        });
+                      });
+                    }}
+                  >
+                    <Award className="mr-2 h-4 w-4" />
+                    Re-Score
+                  </Button>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-md">
+                  <div className="flex items-center mb-3">
+                    <div className={`w-3 h-3 rounded-full mr-2 ${
+                      lead.score === 'high' ? 'bg-green-500' : 
+                      lead.score === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}></div>
+                    <span className="font-medium capitalize">{lead.score || 'Unknown'} Quality Lead</span>
+                    {lead.aiSimilarityScore && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        ({Math.round(parseFloat(lead.aiSimilarityScore) * 100)}% match)
+                      </span>
+                    )}
+                  </div>
+                  {lead.aiScoreExplanation ? (
+                    <p className="text-sm text-gray-700">{lead.aiScoreExplanation}</p>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">
+                      No AI scoring explanation available. Click "Re-Score" to generate an explanation.
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-6 border-t border-gray-200 pt-4">
                 <h3 className="text-base font-medium mb-2">Activity Timeline</h3>
                 <div className="border-l-2 border-gray-200 pl-4 ml-2 space-y-4">
                   <div className="relative">

@@ -30,7 +30,8 @@ import {
   Trash2, 
   Plus, 
   Download,
-  QrCode
+  QrCode,
+  Award
 } from "lucide-react";
 import { Event, Lead } from "@shared/schema";
 import { CSVImport } from "@/components/leads/csv-import";
@@ -298,6 +299,39 @@ export default function EventDetailPage() {
                         <CardHeader className="flex flex-row items-center justify-between">
                           <CardTitle>Collected Leads</CardTitle>
                           <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                // Trigger batch AI lead scoring
+                                fetch(`/api/events/${eventId}/leads/score`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' }
+                                })
+                                .then(res => {
+                                  if (!res.ok) throw new Error('Failed to score leads');
+                                  return res.json();
+                                })
+                                .then(data => {
+                                  const { results } = data;
+                                  toast({
+                                    title: "Leads scored successfully",
+                                    description: `Processed ${results.processed}/${results.total} leads (High: ${results.high}, Medium: ${results.medium}, Low: ${results.low})`,
+                                  });
+                                  // Refresh the leads data
+                                  queryClient.invalidateQueries({ queryKey: ["/api/events", eventId, "leads"] });
+                                })
+                                .catch(err => {
+                                  toast({
+                                    title: "Error scoring leads",
+                                    description: err.message,
+                                    variant: "destructive",
+                                  });
+                                });
+                              }}
+                            >
+                              <Award className="mr-2 h-4 w-4" />
+                              AI Score All
+                            </Button>
                             <CSVImport eventId={eventId ? parseInt(eventId) : undefined} />
                             <Button 
                               onClick={() => navigate(`/scanner/${eventId}`)}

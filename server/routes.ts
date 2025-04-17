@@ -214,6 +214,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertLeadSchema.parse(leadData);
       const lead = await storage.createLead(validatedData);
       
+      // Asynchronously score the lead using OpenAI
+      try {
+        const aiScoring = await scoreLead(lead);
+        await storage.updateLead(lead.id, {
+          score: aiScoring.score,
+          aiScoreExplanation: aiScoring.explanation,
+          aiSimilarityScore: aiScoring.similarityScore.toString()
+        });
+      } catch (aiError) {
+        console.error("Error scoring lead with AI:", aiError);
+        // If AI scoring fails, we don't want to fail the entire request
+      }
+      
       res.status(201).json(lead);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -432,6 +445,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       res.status(500).json({ error: "Error processing CSV file" });
+    }
+  });
+
+  // AI Lead Scoring endpoint
+  app.post("/api/leads/:id/score", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const leadId = parseInt(req.params.id);
+    
+    if (isNaN(leadId)) {
+      return res.status(400).json({ error: "Invalid lead ID" });
+    }
+    
+    try {
+      const existingLead = await storage.getLead(leadId);
+      if (!existingLead) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+      
+      // Check if the lead belongs to the user
+      if (existingLead.userId !== userId) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+      
+      // Score the lead with AI
+      const aiScoring = await scoreLead(existingLead);
+      const updatedLead = await storage.updateLead(leadId, {
+        score: aiScoring.score,
+        aiScoreExplanation: aiScoring.explanation,
+        aiSimilarityScore: aiScoring.similarityScore.toString()
+      });
+      
+      res.json({
+        success: true,
+        lead: updatedLead,
+        scoring: {
+          score: aiScoring.score,
+          explanation: aiScoring.explanation,
+          similarityScore: Math.round(aiScoring.similarityScore * 100) / 100
+        }
+      });
+    } catch (error) {
+      console.error("Error scoring lead:", error);
+      res.status(500).json({ error: "Failed to score lead" });
+    }
+  });
+  
+  // Batch Lead Scoring endpoint
+  app.post("/api/events/:id/leads/score", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const userId = req.user!.id;
+    const eventId = parseInt(req.params.id);
+    
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+    
+    try {
+      const event = await storage.getEvent(eventId, userId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      
+      const leads = await storage.getLeadsByEvent(eventId);
+      
+      // Process leads in batches to avoid overwhelming the API
+      const results = {
+        total: leads.length,
+        processed: 0,
+        high: 0,
+        medium: 0,
+        low: 0,
+        failed: 0
+      };
+      
+      // Process in smaller batches to avoid rate limits
+      const batchSize = 5;
+      for (let i = 0; i < leads.length; i += batchSize) {
+        const batch = leads.slice(i, i + batchSize);
+        
+        // Process each lead in the batch
+        const batchPromises = batch.map(async (lead) => {
+          try {
+            const aiScoring = await scoreLead(lead);
+            await storage.updateLead(lead.id, {
+              score: aiScoring.score,
+              aiScoreExplanation: aiScoring.explanation,
+              aiSimilarityScore: aiScoring.similarityScore.toString()
+            });
+            
+            results.processed++;
+            if (aiScoring.score === "high") results.high++;
+            else if (aiScoring.score === "medium") results.medium++;
+            else results.low++;
+            
+            return true;
+          } catch (error) {
+            console.error(`Error scoring lead ${lead.id}:`, error);
+            results.failed++;
+            return false;
+          }
+        });
+        
+        // Wait for the current batch to complete before moving to the next
+        await Promise.all(batchPromises);
+      }
+      
+      res.json({
+        success: true,
+        results
+      });
+    } catch (error) {
+      console.error("Error batch scoring leads:", error);
+      res.status(500).json({ error: "Failed to score leads" });
     }
   });
 
