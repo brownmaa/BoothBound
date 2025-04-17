@@ -362,12 +362,31 @@ export class MemStorage implements IStorage {
           title: "Developer Advocate",
           company: "DevTools Inc",
           eventId: 1,
-          notes: "Inquired about API documentation",
+          notes: "Inquired about API documentation. Very interested in integration capabilities. Follow up needed regarding enterprise pricing.",
           score: "medium",
           userId: testUser.id,
           employeeName: "Lisa Zhang",
           source: "scan",
-          createdAt: new Date("2025-05-17T13:30:00")
+          createdAt: new Date("2025-05-17T13:30:00"),
+          linkedIn: "https://linkedin.com/in/johnsmith",
+          twitter: "@johnsmith",
+          interests: ["API Development", "Developer Tools", "Cloud Infrastructure"],
+          budget: "$50k-100k",
+          timeline: "Q3 2025",
+          followUpDate: new Date("2025-06-01"),
+          meetings: [
+            {
+              date: new Date("2025-05-17T14:00:00"),
+              type: "Demo",
+              notes: "Showed enterprise features"
+            },
+            {
+              date: new Date("2025-05-17T16:30:00"),
+              type: "Technical Discussion",
+              notes: "Discussed API limits and SLA requirements"
+            }
+          ],
+          tags: ["Enterprise", "Hot Lead", "Technical Decision Maker"]
         },
         {
           id: 8,
