@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { Event, Lead } from "@shared/schema";
 import { CSVImport } from "@/components/leads/csv-import";
+import { AttendeeList } from "@/components/events/attendee-list";
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -253,6 +254,7 @@ export default function EventDetailPage() {
                     <TabsList className="w-full">
                       <TabsTrigger value="overview" className="flex-1">Overview</TabsTrigger>
                       <TabsTrigger value="leads" className="flex-1">Leads ({leads?.length || 0})</TabsTrigger>
+                      <TabsTrigger value="team" className="flex-1">Team</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="mt-4">
@@ -488,6 +490,14 @@ export default function EventDetailPage() {
                               ))}
                             </div>
                           )}
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                    
+                    <TabsContent value="team" className="mt-4">
+                      <Card>
+                        <CardContent className="p-6">
+                          <AttendeeList eventId={eventId} />
                         </CardContent>
                       </Card>
                     </TabsContent>
