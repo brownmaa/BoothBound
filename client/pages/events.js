@@ -1,10 +1,30 @@
 import Head from "next/head";
 
-/* temporary mock data */
 const events = [
-  { id: 1, name: "SaaStr Annual 2025", start: "2025‑09‑10", end: "2025‑09‑12", city: "Austin, TX" },
-  { id: 2, name: "CES 2026",           start: "2026‑01‑07", end: "2026‑01‑10", city: "Las Vegas, NV" },
-  { id: 3, name: "Inbound 2025",       start: "2025‑05‑15", end: "2025‑05‑17", city: "Boston, MA"   },
+  {
+    id: "saastr-2025",
+    name: "SaaStr Annual 2025",
+    start: "2025-09-10",
+    end:   "2025-09-12",
+    city:  "Austin",
+    state: "TX",
+  },
+  {
+    id: "ces-2026",
+    name: "CES 2026",
+    start: "2026-01-07",
+    end:   "2026-01-10",
+    city:  "Las Vegas",
+    state: "NV",
+  },
+  {
+    id: "inbound-2025",
+    name: "Inbound 2025",
+    start: "2025-05-15",
+    end:   "2025-05-17",
+    city:  "Boston",
+    state: "MA",
+  },
 ];
 
 export default function Events() {
@@ -21,7 +41,12 @@ export default function Events() {
               <h2 className="text-xl font-medium mb-1">{ev.name}</h2>
               <p className="text-sm text-gray-600">{ev.start} → {ev.end}</p>
               <p className="text-sm text-gray-600 mb-4">{ev.city}</p>
-              <a href={"/events/" + ev.id} className="inline-block rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
+              <Link
+                href={`/events/${event.id}`}
+                className="mt-4 inline-block rounded bg-blue-600 px-4 py-2 text-white"
+              >
+                View details
+              </Link>
                 View details
               </a>
             </article>
