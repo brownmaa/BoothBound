@@ -1,4 +1,4 @@
-import { leads } from "@/data";
+import { leads } from "../data";
 import Link from "next/link";
 
 export default function LeadsPage() {

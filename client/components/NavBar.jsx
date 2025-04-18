@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import MobileMenu from "@/components/MobileMenu";
+import MobileMenu from "../components/MobileMenu";
 
 export default function NavBar() {
   return (

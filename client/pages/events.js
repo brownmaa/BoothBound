@@ -1,4 +1,4 @@
-import { events } from "@/data";
+import { events } from "../data";
 import Link from "next/link";             // ➊  FIX: add this line
 
 /* mock array with ids */

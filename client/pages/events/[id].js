@@ -1,4 +1,4 @@
-import { events } from "@/data";
+import { events } from "../../data";
 import React from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
