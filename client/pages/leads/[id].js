@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { leads } from "../data/leads";
+import { leads } from "../../data/leads";
 
 export default function LeadDetail() {
   const { query } = useRouter();
