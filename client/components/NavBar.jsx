@@ -16,6 +16,7 @@ export default function NavBar() {
           <li><Link href="/events" className="hover:text-blue-600">Events</Link></li>
           {/* add Leads, Analytics later */}
           <li><Link href="/leads"   className="hover:text-blue-600">Leads</Link></li>
+          <li><Link href="/analytics" className="hover:text-blue-600">Analytics</Link></li>
   <li><Link href="/analytics" className="hover:text-blue-600">Analytics</Link></li>
 </ul>
 

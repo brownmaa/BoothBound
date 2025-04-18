@@ -1,3 +1,4 @@
+import { events } from "@/data";
 import { events } from "../data/events";
 import Link from "next/link";             // ➊  FIX: add this line
 
