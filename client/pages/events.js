@@ -48,7 +48,6 @@ export default function Events() {
                 View details
               </Link>
                 View details
-              </a>
             </article>
           ))}
         </div>
