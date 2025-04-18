@@ -1,23 +1,13 @@
 import MobileMenu from "@/components/MobileMenu";
-import Link from "next/link";
 
-export default function NavBar() {
   return (
-    <header className="w-full bg-white shadow-sm">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        {/* logo / brand */}
         <Link href="/" className="text-lg font-semibold text-gray-900">
-          BoothBound
         </Link>
-
         {/* desktop links */}
-        <ul className="hidden gap-6 md:flex">
           <li><Link href="/"      className="hover:text-blue-600">Home</Link></li>
-          <li><Link href="/events" className="hover:text-blue-600">Events</Link></li>
           {/* add Leads, Analytics later */}
-          <li><Link href="/leads"   className="hover:text-blue-600">Leads</Link></li>
           <li><Link href="/analytics" className="hover:text-blue-600">Analytics</Link></li>
-  <li><Link href="/analytics" className="hover:text-blue-600">Analytics</Link></li>
 </ul>
 
         {/* mobile hamburger (coming soon) */}
