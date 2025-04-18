@@ -1,10 +1,8 @@
+import { events } from "@/data/events";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
 /*--- 1.  same mock data (or import from a shared file) ---*/
-const events = [
-  /* ...copy the array with ids here (or export/import) ... */
-];
 
 export default function EventDetail() {
   const { query } = useRouter();
