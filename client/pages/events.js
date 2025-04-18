@@ -1,5 +1,4 @@
 import Link from "next/link";             // ➊  FIX: add this line
-import "../styles/globals.css";           // keep if needed; remove if duplicate
 
 /* mock array with ids */
 const events = [
