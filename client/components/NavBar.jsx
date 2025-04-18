@@ -15,7 +15,9 @@ export default function NavBar() {
         <li><Link href="/"          className="hover:text-blue-600">Home</Link></li>
         <li><Link href="/events"    className="hover:text-blue-600">Events</Link></li>
         <li><Link href="/leads"     className="hover:text-blue-600">Leads</Link></li>
+        <li><Link href="/scanner" className="hover:text-blue-600">Scanner</Link></li>
         <li><Link href="/analytics" className="hover:text-blue-600">Analytics</Link></li>
+        <li><Link href="/admin/dashboard" className="hover:text-blue-600">Admin</Link></li>
       </ul>
 
       {/* mobile hamburger */}
