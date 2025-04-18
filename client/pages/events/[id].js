@@ -9,6 +9,9 @@ export default function EventDetail() {
   const event = events.find((e) => e.id === query.id);
 
   if (!event) {
+  const [notes,setNotes]=React.useState([]);
+  React.useEffect(()=>{fetch(`/api/events/${query.id}/notes`).then(r=>r.json()).then(setNotes);},[query.id]);
+  const addNote=async(e)=>{e.preventDefault();const text=e.target.note.value;await fetch(`/api/events/${query.id}/notes`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});e.target.reset();const n=await (await fetch(`/api/events/${query.id}/notes`)).json();setNotes(n);} 
     return (
       <main className="flex h-screen flex-col items-center justify-center">
         <h1 className="text-2xl font-semibold">Event not found 😕</h1>
@@ -19,6 +22,9 @@ export default function EventDetail() {
     );
   }
 
+  const [notes,setNotes]=React.useState([]);
+  React.useEffect(()=>{fetch(`/api/events/${query.id}/notes`).then(r=>r.json()).then(setNotes);},[query.id]);
+  const addNote=async(e)=>{e.preventDefault();const text=e.target.note.value;await fetch(`/api/events/${query.id}/notes`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});e.target.reset();const n=await (await fetch(`/api/events/${query.id}/notes`)).json();setNotes(n);} 
   return (
     <main className="mx-auto max-w-2xl p-6">
       <Link href="/events" className="text-blue-600">&larr; All events</Link>

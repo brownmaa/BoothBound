@@ -1,3 +1,4 @@
+import MobileMenu from "@/components/MobileMenu";
 import Link from "next/link";
 
 export default function NavBar() {
@@ -14,7 +15,9 @@ export default function NavBar() {
           <li><Link href="/"      className="hover:text-blue-600">Home</Link></li>
           <li><Link href="/events" className="hover:text-blue-600">Events</Link></li>
           {/* add Leads, Analytics later */}
-        </ul>
+          <li><Link href="/leads"   className="hover:text-blue-600">Leads</Link></li>
+  <li><Link href="/analytics" className="hover:text-blue-600">Analytics</Link></li>
+</ul>
 
         {/* mobile hamburger (coming soon) */}
         <button className="md:hidden rounded p-2 hover:bg-gray-100">
