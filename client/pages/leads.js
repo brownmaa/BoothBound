@@ -1,6 +1,5 @@
 import { leads } from "@/data";
 import Link from "next/link";
-import { leads } from "@/data/leads";
 
 export default function LeadsPage() {
   return (
